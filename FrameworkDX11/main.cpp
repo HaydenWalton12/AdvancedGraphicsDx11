@@ -677,5 +677,6 @@ void Render()
     g_pSwapChain->Present( 0, 0 );
 }
 
-
-
+Main::Main()
+{
+}

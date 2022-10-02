@@ -164,6 +164,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;_WIN32_WINNT=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
@@ -355,6 +356,7 @@
     <ClInclude Include="DrawableGameObject.h" />
     <ClInclude Include="main.h" />
     <CLInclude Include="resource.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="structures.h" />
     <ResourceCompile Include="Tutorial01.rc" />
   </ItemGroup>
@@ -362,6 +364,7 @@
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="DrawableGameObject.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\stone.dds" />
