@@ -10,10 +10,10 @@ public:
 	//Constructor Overloading To Either Create Vertex/Pixel Shader
 	Shader();
 	//Create Vertex Shader
-	Shader(ID3D11Device* device, ID3D11DeviceContext* device_context,  WCHAR* vertex_shader_path, ID3D11InputLayout* vertex_layout);
+	Shader(ID3D11Device* device, ID3D11DeviceContext* device_context, const wchar_t* vertex_shader_path);
 	//Create Pixel Shader
-	Shader(ID3D11Device* device, WCHAR* pixel_shader_path);
-
+	Shader(ID3D11Device* device, const wchar_t* pixel_shader_path);
+	Shader(ID3D11Device* device, ID3D11DeviceContext* device_context, const wchar_t* vertex_shader_path , const wchar_t* pixel_shader_path);
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> GetVertexShader() { return _VertexShader; };
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> GetPixelShader() { return _PixelShader; };
 	//ID3D11InputLayout - Describes an element expressed for the input assembler stage (this stage determines what data will be entered for later processing within rendering/dx11 pipeline).

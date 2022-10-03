@@ -384,7 +384,7 @@ HRESULT InitDevice()
 	hr = g_GameObject.initMesh(g_pd3dDevice, g_pImmediateContext);
 
     
-   // g_GameObject.initialise_shader(g_pd3dDevice, g_pImmediateContext, L"shader.fx", L"shader.fx");
+    g_GameObject.initialise_shader(g_pd3dDevice, g_pImmediateContext, L"shader.fx", L"shader.fx");
 	if (FAILED(hr))
 		return hr;
 
@@ -672,10 +672,10 @@ void Render()
     setupLightForRender();
 
     // Render the cube
-	g_pImmediateContext->VSSetShader( g_pVertexShader, nullptr, 0 );
+	g_pImmediateContext->VSSetShader(g_GameObject._shader->GetVertexShader().Get(), nullptr, 0 );
 	g_pImmediateContext->VSSetConstantBuffers( 0, 1, &g_pConstantBuffer );
 
-    g_pImmediateContext->PSSetShader( g_pPixelShader, nullptr, 0 );
+    g_pImmediateContext->PSSetShader(g_GameObject._shader->GetPixelShader().Get(), nullptr, 0);
 	g_pImmediateContext->PSSetConstantBuffers(2, 1, &g_pLightConstantBuffer);
     ID3D11Buffer* materialCB = g_GameObject.getMaterialConstantBuffer();
     g_pImmediateContext->PSSetConstantBuffers(1, 1, &materialCB);

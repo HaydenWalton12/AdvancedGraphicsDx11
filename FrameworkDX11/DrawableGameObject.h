@@ -8,7 +8,7 @@
 #include "resource.h"
 #include <iostream>
 #include "structures.h"
-
+#include <memory.h>
 #include "Shader.h"
 
 using namespace DirectX;
@@ -29,7 +29,7 @@ public:
 	void cleanup();
 
 	HRESULT								initMesh(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContext);
-	void								initialise_shader(ID3D11Device* device, ID3D11DeviceContext* device_context , WCHAR* pixel_shader_path , WCHAR* vertex_shader_path);
+	void								initialise_shader(ID3D11Device* device, ID3D11DeviceContext* device_context , const wchar_t* pixel_shader_path , const wchar_t* vertex_shader_path);
 
 
 	void								update(float t, ID3D11DeviceContext* pContext);
@@ -41,7 +41,12 @@ public:
 	ID3D11SamplerState**				getTextureSamplerState() { return &m_pSamplerLinear; }
 	ID3D11Buffer*						getMaterialConstantBuffer() { return m_pMaterialConstantBuffer;}
 	void								setPosition(XMFLOAT3 position);
+	//Shared Pointer - 
+//Smart pointer derivative that retains an "shared" ownership of an object via a pointer, may own the same object.
+//This allows us to share the management of the pointer during its lifetime, contains all functionality of a smart pointer too.
 
+//In OOP sense , we can share the management of the pointer to child classes that have access to this
+	std::shared_ptr<Shader> _shader;
 private:
 	
 	XMFLOAT4X4							m_World;
@@ -54,6 +59,7 @@ private:
 	ID3D11Buffer*						m_pMaterialConstantBuffer = nullptr;
 	XMFLOAT3							m_position;
 
+
 protected:
 
 	//Shared Pointer - 
@@ -61,7 +67,7 @@ protected:
 	//This allows us to share the management of the pointer during its lifetime, contains all functionality of a smart pointer too.
 
 	//In OOP sense , we can share the management of the pointer to child classes that have access to this
-	std::shared_ptr<Shader> _shader;
+	//std::shared_ptr<Shader> _shader;
 
 };
 
