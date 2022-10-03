@@ -15,7 +15,7 @@
 #include "structures.h"
 
 #include <vector>
-
+#include "Shader.h"
 using namespace std;
 
 
