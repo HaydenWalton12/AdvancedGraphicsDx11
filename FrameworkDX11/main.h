@@ -15,7 +15,18 @@
 #include "structures.h"
 
 #include <vector>
-
+#include "Shader.h"
 using namespace std;
 
-typedef vector<DrawableGameObject*> vecDrawables;
+
+
+//Centre of scene loop , window and D3D11 implementation
+class Main
+{
+public:
+	Main();
+	~Main();
+
+
+	typedef vector<DrawableGameObject*> vecDrawables;
+};
