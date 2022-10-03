@@ -184,6 +184,7 @@ void DrawableGameObject::initialise_shader(ID3D11Device* device, ID3D11DeviceCon
 		_shader = std::make_shared<Shader>(device, device_context, vertex_shader_path , pixel_shader_path);
 	}
 
+
 }
 
 void DrawableGameObject::setPosition(XMFLOAT3 position)
