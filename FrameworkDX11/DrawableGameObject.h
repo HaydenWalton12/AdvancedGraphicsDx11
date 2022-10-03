@@ -41,12 +41,9 @@ public:
 	ID3D11SamplerState**				getTextureSamplerState() { return &m_pSamplerLinear; }
 	ID3D11Buffer*						getMaterialConstantBuffer() { return m_pMaterialConstantBuffer;}
 	void								setPosition(XMFLOAT3 position);
-	//Shared Pointer - 
-//Smart pointer derivative that retains an "shared" ownership of an object via a pointer, may own the same object.
-//This allows us to share the management of the pointer during its lifetime, contains all functionality of a smart pointer too.
-
-//In OOP sense , we can share the management of the pointer to child classes that have access to this
-	std::shared_ptr<Shader> _shader;
+	//Unique Pointer
+	//Smart Pointer derivative , manages annother object through a pointer , when the object is out of scope , pointer is automatically disposed
+	std::unique_ptr<Shader> _shader;
 private:
 	
 	XMFLOAT4X4							m_World;

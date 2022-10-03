@@ -171,12 +171,23 @@ HRESULT DrawableGameObject::initMesh(ID3D11Device* pd3dDevice, ID3D11DeviceConte
 void DrawableGameObject::initialise_shader(ID3D11Device* device, ID3D11DeviceContext* device_context, const wchar_t* pixel_shader_path, const wchar_t* vertex_shader_path)
 {
 	
+
+	//Old Solution
+	/*if (vertex_shader_path != nullptr && pixel_shader_path != nullptr)
+	{
+		_shader = std::make_unique<Shader>(device , pixel_shader_path);
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> temp = _shader.get()->GetPixelShader();
+		_shader = std::make_unique<Shader>(device, device_context, vertex_shader_path);
+		_shader.get()->SetPixelShader(temp);
+	}*/
+
+	//New Solution
 	if (vertex_shader_path != nullptr && pixel_shader_path != nullptr)
 	{
-		_shader = std::make_shared<Shader>(device, device_context, vertex_shader_path , pixel_shader_path);
+
+		_shader = std::make_unique<Shader>(device, device_context, vertex_shader_path , pixel_shader_path);
+
 	}
-
-
 }
 
 void DrawableGameObject::setPosition(XMFLOAT3 position)
