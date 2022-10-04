@@ -22,7 +22,7 @@ public:
 	}
 	~Camera();
 
-	void ImGuiCameraSettings()
+	void ImGuiCameraSettings();
 	//Get/Set World Camera Positions
 
 	DirectX::XMFLOAT4 GetPosition() { return _Position; }

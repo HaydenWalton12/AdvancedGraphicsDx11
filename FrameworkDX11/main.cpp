@@ -505,21 +505,6 @@ HRESULT		InitMesh()
 // ***************************************************************************************
 HRESULT		InitWorld(int width, int height)
 {
-
-
-	//// Initialize the view matrix
-	//XMVECTOR Eye = XMLoadFloat4(&g_EyePosition);
-	//XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	//XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-
-	//g_View = XMMatrixLookAtLH(Eye, At, Up);
-
-	//// Initialize the projection matrix
-	//g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
-
-
-    
     //Init Camera
     g_Camera = new Camera(XMFLOAT4(0.0f, 0.0f, -3.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewHeight, g_viewWidth, XM_PIDIV2, 0.01f, 100.0f);
 	
