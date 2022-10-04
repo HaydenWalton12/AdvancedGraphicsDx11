@@ -49,16 +49,13 @@ ID3D11Texture2D*        g_pDepthStencil = nullptr;
 ID3D11DepthStencilView* g_pDepthStencilView = nullptr;
 ID3D11VertexShader*     g_pVertexShader = nullptr;
 
-ID3D11PixelShader*      g_pPixelShader = nullptr;
 
-ID3D11InputLayout*      g_pVertexLayout = nullptr;
 
 ID3D11Buffer*           g_pConstantBuffer = nullptr;
 
 ID3D11Buffer*           g_pLightConstantBuffer = nullptr;
 Camera* g_Camera = nullptr;
-XMMATRIX                g_View;
-XMMATRIX                g_Projection;
+
 
 int						g_viewWidth;
 int						g_viewHeight;
@@ -530,10 +527,8 @@ void CleanupDevice()
 
     if (g_pLightConstantBuffer)
         g_pLightConstantBuffer->Release();
-    if (g_pVertexLayout) g_pVertexLayout->Release();
+ 
     if( g_pConstantBuffer ) g_pConstantBuffer->Release();
-    if( g_pVertexShader ) g_pVertexShader->Release();
-    if( g_pPixelShader ) g_pPixelShader->Release();
     if( g_pDepthStencil ) g_pDepthStencil->Release();
     if( g_pDepthStencilView ) g_pDepthStencilView->Release();
     if( g_pRenderTargetView ) g_pRenderTargetView->Release();
