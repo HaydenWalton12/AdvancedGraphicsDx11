@@ -42,6 +42,12 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> _VertexLayout;
 	WCHAR* _File;
 
+
+	//--------------------------------------------------------------------------------------
+	// Helper for compiling shaders with D3DCompile
+	//
+	// With VS 11, we could load up prebuilt .cso files instead...
+	//--------------------------------------------------------------------------------------
 	HRESULT CompileShaderFromFile(const WCHAR* fileName, LPCSTR entryPoint, LPCSTR shaderModel, ID3DBlob** blobOut);
 
 	HRESULT hr;

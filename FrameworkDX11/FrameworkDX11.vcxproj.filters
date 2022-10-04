@@ -30,6 +30,8 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Home.cpp" />
+    <ClCompile Include="InitDirectX11.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DDSTextureLoader.h" />
@@ -63,6 +65,8 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Home.h" />
+    <ClInclude Include="InitDirectX11.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Tutorial01.rc" />
