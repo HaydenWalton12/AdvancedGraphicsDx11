@@ -144,6 +144,8 @@ HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
 
     ShowWindow( g_hWnd, nCmdShow );
 
+
+
     return S_OK;
 }
 
@@ -387,6 +389,14 @@ HRESULT InitDevice()
     g_GameObject.initialise_shader(g_pd3dDevice, g_pImmediateContext, L"shader.fx", L"shader.fx");
 	if (FAILED(hr))
 		return hr;
+
+    //Setup ImGui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplWin32_Init(g_hWnd);
+    ImGui_ImplDX11_Init(g_pd3dDevice, g_pImmediateContext);
+    ImGui::StyleColorsDark();
 
     return S_OK;
 }
@@ -644,6 +654,10 @@ float calculateDeltaTime()
 //--------------------------------------------------------------------------------------
 void Render()
 {
+
+
+
+
     float t = calculateDeltaTime(); // capped at 60 fps
     if (t == 0.0f)
         return;
@@ -679,8 +693,21 @@ void Render()
 	g_pImmediateContext->PSSetConstantBuffers(2, 1, &g_pLightConstantBuffer);
     ID3D11Buffer* materialCB = g_GameObject.getMaterialConstantBuffer();
     g_pImmediateContext->PSSetConstantBuffers(1, 1, &materialCB);
-
     g_GameObject.draw(g_pImmediateContext);
+  
+    //Im GUI Draw Order , Must Be after dx11 draw order
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("Physics Engine Simulations");
+    //Menu Displayed After Simulation Starts
+    ImGui::Text("About : This is a simple engine demonstrating the approximation of physics properties.\n\n\n\n");
+    ImGui::End();
+
+    //Render IMGUI
+    ImGui::Render();
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
     // Present our back buffer to our front buffer
     g_pSwapChain->Present( 0, 0 );
@@ -689,3 +716,4 @@ void Render()
 Main::Main()
 {
 }
+
