@@ -16,7 +16,7 @@
 
 #include <vector>
 #include "Shader.h"
-
+#include "Camera.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "imgui_impl_win32.h"
@@ -32,6 +32,6 @@ public:
 	Main();
 	~Main();
 
-
+	Camera* _Camera;
 	typedef vector<DrawableGameObject*> vecDrawables;
 };

@@ -56,7 +56,7 @@ ID3D11InputLayout*      g_pVertexLayout = nullptr;
 ID3D11Buffer*           g_pConstantBuffer = nullptr;
 
 ID3D11Buffer*           g_pLightConstantBuffer = nullptr;
-
+Camera* g_Camera = nullptr;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 
@@ -505,16 +505,25 @@ HRESULT		InitMesh()
 // ***************************************************************************************
 HRESULT		InitWorld(int width, int height)
 {
-	// Initialize the view matrix
-	XMVECTOR Eye = XMLoadFloat4(&g_EyePosition);
-	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	g_View = XMMatrixLookAtLH(Eye, At, Up);
 
-	// Initialize the projection matrix
-	g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
 
-	return S_OK;
+	//// Initialize the view matrix
+	//XMVECTOR Eye = XMLoadFloat4(&g_EyePosition);
+	//XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	//XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+
+	//g_View = XMMatrixLookAtLH(Eye, At, Up);
+
+	//// Initialize the projection matrix
+	//g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
+
+
+    
+    //Init Camera
+    g_Camera = new Camera(XMFLOAT4(0.0f, 0.0f, -3.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewHeight, g_viewWidth, XM_PIDIV2, 0.01f, 100.0f);
+	
+    return S_OK;
 }
 
 
@@ -677,8 +686,8 @@ void Render()
     // store this and the view / projection in a constant buffer for the vertex shader to use
     ConstantBuffer cb1;
 	cb1.mWorld = XMMatrixTranspose( mGO);
-	cb1.mView = XMMatrixTranspose( g_View );
-	cb1.mProjection = XMMatrixTranspose( g_Projection );
+	cb1.mView = XMMatrixTranspose(g_Camera->CalculateViewMatrix());
+	cb1.mProjection = XMMatrixTranspose( g_Camera->CalculateProjectionMatrix() );
 	cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
 	g_pImmediateContext->UpdateSubresource( g_pConstantBuffer, 0, nullptr, &cb1, 0, 0 );
 
