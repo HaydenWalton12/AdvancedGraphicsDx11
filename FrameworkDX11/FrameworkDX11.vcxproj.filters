@@ -36,7 +36,6 @@
   <ItemGroup>
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="DrawableGameObject.h" />
-    <ClInclude Include="main.h" />
     <CLInclude Include="resource.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="structures.h" />

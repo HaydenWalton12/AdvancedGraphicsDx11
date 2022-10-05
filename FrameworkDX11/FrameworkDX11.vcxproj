@@ -366,7 +366,6 @@
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="InitDirectX11.h" />
-    <ClInclude Include="main.h" />
     <CLInclude Include="resource.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="structures.h" />

@@ -1,32 +1,48 @@
 #include "Home.h"
-// ***************************************************************************************
-// InitWorld - Should Be relative To Home
-// ***************************************************************************************
-HRESULT InitWorld(int width, int height)
-{
-    //Init Camera
-    _pCamera = new Camera(XMFLOAT4(0.0f, 0.0f, -3.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewHeight, g_viewWidth, XM_PIDIV2, 0.01f, 100.0f);
 
-    return S_OK;
+
+DrawableGameObject		g_GameObject;
+
+
+void Home::InitialiseApplication(HWND hwnd , int width , int height)
+{
+
+    _pInitDx11 = new InitDirectX11(hwnd , width , height);
+    InitScene(width, height);
 }
 
 //--------------------------------------------------------------------------------------
-// Render a frame 
+// Starts Scene Objects
 //--------------------------------------------------------------------------------------
-void Render()
+HRESULT Home::InitScene(int width, int height)
 {
-    float t = calculateDeltaTime(); // capped at 60 fps
+        //Initialise Camera
+    int 	g_viewWidth = 720;
+    int     g_viewHeight = 1280;
+        _pCamera = new Camera(XMFLOAT4(0.0f, 0.0f, -3.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
+       
+        g_GameObject.initMesh(_pInitDx11->GetDevice().Get(), _pInitDx11->GetDeviceContext().Get());
+        g_GameObject.initialise_shader(_pInitDx11->GetDevice().Get(), _pInitDx11->GetDeviceContext().Get(), L"shader.fx", L"shader.fx");
+
+        return S_OK;
+    
+
+}
+
+void Home::Render()
+{
+    float t = CalculateDeltaTime(); // capped at 60 fps
     if (t == 0.0f)
         return;
 
     // Clear the back buffer
-    g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
+    _pInitDx11->GetDeviceContext()->ClearRenderTargetView(_pInitDx11->GetRenderTargetView().Get(), Colors::MidnightBlue);
 
     // Clear the depth buffer to 1.0 (max depth)
-    g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+    _pInitDx11->GetDeviceContext()->ClearDepthStencilView(_pInitDx11->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
     // Update the cube transform, material etc. 
-    g_GameObject.update(t, g_pImmediateContext);
+    g_GameObject.update(t, _pInitDx11->GetDeviceContext().Get());
 
     // get the game object world transform
     XMMATRIX mGO = XMLoadFloat4x4(g_GameObject.getTransform());
@@ -34,23 +50,23 @@ void Render()
     // store this and the view / projection in a constant buffer for the vertex shader to use
     ConstantBuffer cb1;
     cb1.mWorld = XMMatrixTranspose(mGO);
-    cb1.mView = XMMatrixTranspose(g_Camera->CalculateViewMatrix());
-    cb1.mProjection = XMMatrixTranspose(g_Camera->CalculateProjectionMatrix());
+    cb1.mView = XMMatrixTranspose(_pCamera->CalculateViewMatrix());
+    cb1.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
     cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
-    g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb1, 0, 0);
+    _pInitDx11->GetDeviceContext()->UpdateSubresource(_pInitDx11->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);
 
 
-    setupLightForRender();
+    SetUpLightForRender();
 
     // Render the cube
-    g_pImmediateContext->VSSetShader(g_GameObject._shader->GetVertexShader().Get(), nullptr, 0);
-    g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
+    _pInitDx11->GetDeviceContext()->VSSetShader(g_GameObject._shader->GetVertexShader().Get(), nullptr, 0);
+    _pInitDx11->GetDeviceContext()->VSSetConstantBuffers(0, 1, _pInitDx11->GetConstantBuffer().GetAddressOf());
 
-    g_pImmediateContext->PSSetShader(g_GameObject._shader->GetPixelShader().Get(), nullptr, 0);
-    g_pImmediateContext->PSSetConstantBuffers(2, 1, &g_pLightConstantBuffer);
+    _pInitDx11->GetDeviceContext()->PSSetShader(g_GameObject._shader->GetPixelShader().Get(), nullptr, 0);
+    _pInitDx11->GetDeviceContext()->PSSetConstantBuffers(2, 1, _pInitDx11->GetLightConstantBuffer().GetAddressOf());
     ID3D11Buffer* materialCB = g_GameObject.getMaterialConstantBuffer();
-    g_pImmediateContext->PSSetConstantBuffers(1, 1, &materialCB);
-    g_GameObject.draw(g_pImmediateContext);
+    _pInitDx11->GetDeviceContext()->PSSetConstantBuffers(1, 1, &materialCB);
+    g_GameObject.draw(_pInitDx11->GetDeviceContext().Get());
 
     //Im GUI Draw Order , Must Be after dx11 draw order
     ImGui_ImplDX11_NewFrame();
@@ -67,69 +83,8 @@ void Render()
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
     // Present our back buffer to our front buffer
-    g_pSwapChain->Present(0, 0);
+    _pInitDx11->GetSwapChain()->Present(0, 0);
 }
-
-//--------------------------------------------------------------------------------------
-// Called every time the application receives a message
-//--------------------------------------------------------------------------------------
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    PAINTSTRUCT ps;
-    HDC hdc;
-
-    switch (message)
-    {
-    case WM_LBUTTONDOWN:
-    {
-        int xPos = GET_X_LPARAM(lParam);
-        int yPos = GET_Y_LPARAM(lParam);
-        break;
-    }
-    case WM_PAINT:
-        hdc = BeginPaint(hWnd, &ps);
-        EndPaint(hWnd, &ps);
-        break;
-
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-
-        // Note that this tutorial does not handle resizing (WM_SIZE) requests,
-        // so we created the window without the resize border.
-
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-
-    return 0;
-}
-
-void setupLightForRender()
-{
-    Light light;
-    light.Enabled = static_cast<int>(true);
-    light.LightType = PointLight;
-    light.Color = XMFLOAT4(Colors::White);
-    light.SpotAngle = XMConvertToRadians(45.0f);
-    light.ConstantAttenuation = 1.0f;
-    light.LinearAttenuation = 1;
-    light.QuadraticAttenuation = 1;
-
-
-    // set up the light
-    XMFLOAT4 LightPosition(g_EyePosition);
-    light.Position = LightPosition;
-    XMVECTOR LightDirection = XMVectorSet(-LightPosition.x, -LightPosition.y, -LightPosition.z, 0.0f);
-    LightDirection = XMVector3Normalize(LightDirection);
-    XMStoreFloat4(&light.Direction, LightDirection);
-
-    LightPropertiesConstantBuffer lightProperties;
-    lightProperties.EyePosition = LightPosition;
-    lightProperties.Lights[0] = light;
-    g_pImmediateContext->UpdateSubresource(g_pLightConstantBuffer, 0, nullptr, &lightProperties, 0, 0);
-}
-
 
 void Home::SetUpLightForRender()
 {
@@ -144,7 +99,7 @@ void Home::SetUpLightForRender()
 
 
     // set up the light
-    XMFLOAT4 LightPosition(XMFLOAT4);
+    XMFLOAT4 LightPosition = XMFLOAT4(0.0f , 0.0f ,-5.0f ,0.0f);
     light.Position = LightPosition;
     XMVECTOR LightDirection = XMVectorSet(-LightPosition.x, -LightPosition.y, -LightPosition.z, 0.0f);
     LightDirection = XMVector3Normalize(LightDirection);
@@ -153,7 +108,7 @@ void Home::SetUpLightForRender()
     LightPropertiesConstantBuffer lightProperties;
     lightProperties.EyePosition = LightPosition;
     lightProperties.Lights[0] = light;
-    g_pImmediateContext->UpdateSubresource(g_pLightConstantBuffer, 0, nullptr, &lightProperties, 0, 0);
+    _pInitDx11->GetDeviceContext()->UpdateSubresource(_pInitDx11->GetLightConstantBuffer().Get(), 0, nullptr, &lightProperties, 0, 0);
 }
 
 float Home::CalculateDeltaTime()

@@ -18,6 +18,7 @@ DirectX::XMMATRIX Camera::CalculateViewMatrix()
 
 DirectX::XMMATRIX Camera::CalculateProjectionMatrix()
 {
+	
 	return DirectX::XMMatrixPerspectiveFovLH(_FOV, _WindowWidth / _WindowHeight, _NearZ, _FarZ);
 
 }

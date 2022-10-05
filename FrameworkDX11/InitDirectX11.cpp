@@ -5,22 +5,19 @@
 //--------------------------------------------------------------------------------------
 // Order of initialising Direct3D resources, required for runtime
 //--------------------------------------------------------------------------------------
-
-void InitDirectX11::Init(HWND hwnd, int widht, int height)
+void InitDirectX11::Init()
 {
 
     InitDevice();
     InitSwapChain();
+    InitRenderTargetView();
     InitConstantBuffer();
-
-
-
-
-
+    InitImGUi();
+    InitDepth();
 }
 
 //--------------------------------------------------------------------------------------
-// Create Direct3D device and swap chain
+// Create Direct3D device
 //--------------------------------------------------------------------------------------
 
 HRESULT InitDirectX11::InitDevice()
@@ -74,7 +71,7 @@ HRESULT InitDirectX11::InitDevice()
         return hr;
 
     // Obtain DXGI factory from device (since we used nullptr for pAdapter above)
-    IDXGIFactory1* dxgiFactory = nullptr;
+
     {
         IDXGIDevice* dxgiDevice = nullptr;
         hr = _pd3dDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
@@ -84,7 +81,7 @@ HRESULT InitDirectX11::InitDevice()
             hr = dxgiDevice->GetAdapter(&adapter);
             if (SUCCEEDED(hr))
             {
-                hr = adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&dxgiFactory));
+                hr = adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(_pdxgiFactory1.GetAddressOf()));
                 adapter->Release();
             }
             dxgiDevice->Release();
@@ -93,48 +90,10 @@ HRESULT InitDirectX11::InitDevice()
     if (FAILED(hr))
         return hr;
 
-
     if (FAILED(hr))
         return hr;
 
-    // Create a render target view
-    ID3D11Texture2D* pBackBuffer = nullptr;
-    hr = _pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-    if (FAILED(hr))
-        return hr;
 
-    hr = _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &_pRenderTargetView);
-    pBackBuffer->Release();
-    if (FAILED(hr))
-        return hr;
-
-    // Create depth stencil texture
-    D3D11_TEXTURE2D_DESC descDepth = {};
-    descDepth.Width = width;
-    descDepth.Height = height;
-    descDepth.MipLevels = 1;
-    descDepth.ArraySize = 1;
-    descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    descDepth.SampleDesc.Count = 1;
-    descDepth.SampleDesc.Quality = 0;
-    descDepth.Usage = D3D11_USAGE_DEFAULT;
-    descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-    descDepth.CPUAccessFlags = 0;
-    descDepth.MiscFlags = 0;
-    hr = _pd3dDevice->CreateTexture2D(&descDepth, nullptr, &_pDepthStencil);
-    if (FAILED(hr))
-        return hr;
-
-    // Create the depth stencil view
-    D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
-    descDSV.Format = descDepth.Format;
-    descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-    descDSV.Texture2D.MipSlice = 0;
-    hr = _pd3dDevice->CreateDepthStencilView(_pDepthStencil.Get(), &descDSV, &_pDepthStencilView);
-    if (FAILED(hr))
-        return hr;
-
-    _pImmediateContext->OMSetRenderTargets(1, &_pRenderTargetView, _pDepthStencilView.Get());
 
     // Setup the viewport
     D3D11_VIEWPORT vp;
@@ -146,31 +105,6 @@ HRESULT InitDirectX11::InitDevice()
     vp.TopLeftY = 0;
     _pImmediateContext->RSSetViewports(1, &vp);
 
-    hr = InitMesh();
-    if (FAILED(hr))
-    {
-        MessageBox(nullptr,
-            L"Failed to initialise mesh.", L"Error", MB_OK);
-        return hr;
-    }
-
-    hr = InitWorld(width, height);
-    if (FAILED(hr))
-    {
-        MessageBox(nullptr,
-            L"Failed to initialise world.", L"Error", MB_OK);
-        return hr;
-    }
-
-
-
-    //hr = _GameObject.initMesh(_pd3dDevice, _pImmediateContext);
-    //_GameObject.initialise_shader(_pd3dDevice, _pImmediateContext, L"shader.fx", L"shader.fx");
-
-
-
-
-
 
 
     if (FAILED(hr))
@@ -180,14 +114,13 @@ HRESULT InitDirectX11::InitDevice()
 
     return S_OK;
 }
-// ***************************************************************************************
-// InitMesh
-// ***************************************************************************************
 
+//Old InitMesh Function
 HRESULT		InitDirectX11::InitConstantBuffer()
 {
     HRESULT hr;
 
+    //May Or May Not need to hhange this , since we may only be using cubes for this simulation.
     // Create the constant buffer
     D3D11_BUFFER_DESC bd = {};
     bd.Usage = D3D11_USAGE_DEFAULT;
@@ -221,6 +154,17 @@ HRESULT		InitDirectX11::InitConstantBuffer()
     return hr;
 }
 
+void InitDirectX11::InitRenderTargetView()
+{
+    
+    // Create a render target view
+    ID3D11Texture2D* pBackBuffer = nullptr;
+     _pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+    _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &_pRenderTargetView);
+    pBackBuffer->Release();
+
+}
+
 
 
 void InitDirectX11::InitImGUi()
@@ -232,6 +176,40 @@ void InitDirectX11::InitImGUi()
     ImGui_ImplWin32_Init(_Hwnd);
     ImGui_ImplDX11_Init(_pd3dDevice.Get(), _pImmediateContext.Get());
     ImGui::StyleColorsDark();
+}
+void InitDirectX11::InitSampler()
+{
+}
+
+
+void InitDirectX11::InitDepth()
+{
+
+    // Create depth stencil texture
+    D3D11_TEXTURE2D_DESC descDepth = {};
+    descDepth.Width = _viewWidth;
+    descDepth.Height = _viewHeight;
+    descDepth.MipLevels = 1;
+    descDepth.ArraySize = 1;
+    descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    descDepth.SampleDesc.Count = 1;
+    descDepth.SampleDesc.Quality = 0;
+    descDepth.Usage = D3D11_USAGE_DEFAULT;
+    descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    descDepth.CPUAccessFlags = 0;
+    descDepth.MiscFlags = 0;
+   _pd3dDevice->CreateTexture2D(&descDepth, nullptr, &_pDepthStencil);
+
+
+    // Create the depth stencil view
+    D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+    descDSV.Format = descDepth.Format;
+    descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    descDSV.Texture2D.MipSlice = 0;
+    _pd3dDevice->CreateDepthStencilView(_pDepthStencil.Get(), &descDSV, _pDepthStencilView.GetAddressOf());
+
+
+    _pImmediateContext.Get()->OMSetRenderTargets(1, _pRenderTargetView.GetAddressOf(), _pDepthStencilView.Get());
 }
 /*
 IDXGIFactory - Interface for generating DXGI Objects , such as swap chain
@@ -245,11 +223,11 @@ void InitDirectX11::InitSwapChain()
     UINT width = rc.right - rc.left;
     UINT height = rc.bottom - rc.top;
     // Obtain DXGI factory from device (since we used nullptr for pAdapter above)
-    IDXGIFactory1* dxgiFactory = nullptr;
+
     // Create swap chain
-    IDXGIFactory2* dxgiFactory2 = nullptr;
-    hr = dxgiFactory->QueryInterface(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(&dxgiFactory2));
-    if (dxgiFactory2)
+
+    hr = _pdxgiFactory1.Get()->QueryInterface(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(_pdxgiFactory2.GetAddressOf()));
+    if (_pdxgiFactory2.Get())
     {
         // DirectX 11.1 or later
         hr = _pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(_pd3dDevice1.GetAddressOf()));
@@ -267,13 +245,13 @@ void InitDirectX11::InitSwapChain()
         sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         sd.BufferCount = 1;
 
-        hr = dxgiFactory2->CreateSwapChainForHwnd(_pd3dDevice.Get(), _Hwnd, &sd, nullptr, nullptr, &_pSwapChain1);
+        hr = _pdxgiFactory2->CreateSwapChainForHwnd(_pd3dDevice.Get(), _Hwnd, &sd, nullptr, nullptr, &_pSwapChain1);
         if (SUCCEEDED(hr))
         {
             hr = _pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(_pSwapChain.GetAddressOf()));
         }
 
-        dxgiFactory2->Release();
+        _pdxgiFactory2->Release();
     }
     else
     {
@@ -291,11 +269,11 @@ void InitDirectX11::InitSwapChain()
         sd.SampleDesc.Quality = 0;
         sd.Windowed = TRUE;
 
-        hr = dxgiFactory->CreateSwapChain(_pd3dDevice.Get(), &sd, &_pSwapChain);
+        hr = _pdxgiFactory1->CreateSwapChain(_pd3dDevice.Get(), &sd, &_pSwapChain);
     }
 
     // Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
-    dxgiFactory->MakeWindowAssociation(_Hwnd, DXGI_MWA_NO_ALT_ENTER);
+    _pdxgiFactory1->MakeWindowAssociation(_Hwnd, DXGI_MWA_NO_ALT_ENTER);
 
-    dxgiFactory->Release();
+    _pdxgiFactory1->Release();
 }
