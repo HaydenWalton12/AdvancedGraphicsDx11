@@ -16,14 +16,15 @@
 #include <vector>
 #include "Shader.h"
 #include "Camera.h"
-#include "imgui.h"
-#include "imgui_internal.h"
-#include "imgui_impl_win32.h"
-#include "imgui_impl_dx11.h"
 
 
-#include "InitDirectX11.h"
+#include "Device.h"
+#include "Context.h"
 
+#include <dinput.h>
+
+#pragma comment (lib, "dinput8.lib")
+#pragma comment (lib, "dxguid.lib")
 
 
 //Centre Of Entire FrameWork that will collate all elements together to create functional system
@@ -38,14 +39,28 @@ public:
 
 	}
 
+	IDirectInputDevice8* DIKeyBoard;
+	IDirectInputDevice8* DIMouse;
+
+	DIMOUSESTATE MouseLastState;
+	LPDIRECTINPUT8 DirectInput;
 
 	typedef vector<DrawableGameObject*> vecDrawables;
 	Camera* _pCamera;
-	InitDirectX11* _pInitDx11;
-	void InitialiseApplication(HWND hwnd, int width, int height);
+	HINSTANCE _Instance;
+
+	Device* _pDevice;
+	Context* _pContext;
+	
+	void InitialiseApplication(HWND hwnd, HINSTANCE instance, int width, int height);
 	HRESULT InitScene(int width, int height);
 	void Render();
-	void SetUpLightForRender();
+
 	float CalculateDeltaTime();
+	void Input(HINSTANCE instance);
+	void InitDirectInput(HINSTANCE instance);
+	void ClearRenderTarget();
+	void UpdateConstantBuffer();
+	void Draw();
 };
 

@@ -18,6 +18,9 @@
 
 DirectX::XMFLOAT4 g_EyePosition(0.0f, 0, -3, 1.0f);
 
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+
 //--------------------------------------------------------------------------------------
 // Forward declarations
 //--------------------------------------------------------------------------------------
@@ -46,7 +49,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         return 0;
     }
 
-    g_application->InitialiseApplication(g_hWnd, g_viewWidth , g_viewHeight);
+    g_application->InitialiseApplication(g_hWnd, hInstance,g_viewWidth , g_viewHeight);
      
     // Main message loop
     MSG msg = {0};
@@ -121,15 +124,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     PAINTSTRUCT ps;
     HDC hdc;
 
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+    {
+        return true;
+    }
+
     switch (message)
     {
-    case WM_LBUTTONDOWN:
-    {
-        int xPos = GET_X_LPARAM(lParam);
-        int yPos = GET_Y_LPARAM(lParam);
-        break;
-    }
     case WM_PAINT:
+
         hdc = BeginPaint(hWnd, &ps);
         EndPaint(hWnd, &ps);
         break;
@@ -138,11 +141,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         break;
 
-        // Note that this tutorial does not handle resizing (WM_SIZE) requests,
-        // so we created the window without the resize border.
-
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
+
     }
 
     return 0;

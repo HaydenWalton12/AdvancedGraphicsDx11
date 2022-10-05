@@ -4,6 +4,11 @@
 #include <d3dcompiler.h>
 #include <directxmath.h>
 
+#include "imgui.h"
+#include "imgui_internal.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx11.h"
+
 /*
 	Cameras are used to warp the perspective of scene within worldspace, with defined confines. Their are a multitude of different camera related systems and techniques to 
 	enhance the perspective ,this class will be the defining system to manipulate the camera.
@@ -30,9 +35,9 @@ public:
 	DirectX::XMFLOAT4 GetUp() { return _Up; }
 
 	//Get Frustrum Properties
-	FLOAT GetNearZ() { return _NearZ; }
-	FLOAT GetFov() { return _FOV; }
-	FLOAT GetFarZ() { return _FarZ; }
+	FLOAT			  GetNearZ() { return _NearZ; }
+	FLOAT			  GetFov() { return _FOV; }
+	FLOAT			  GetFarZ() { return _FarZ; }
 
 	
 	void SetPosition(DirectX::XMFLOAT4 position) { _Position = position; }

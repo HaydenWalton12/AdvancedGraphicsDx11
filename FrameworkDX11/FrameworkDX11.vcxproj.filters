@@ -31,7 +31,8 @@
     </ClCompile>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Home.cpp" />
-    <ClCompile Include="InitDirectX11.cpp" />
+    <ClCompile Include="Device.cpp" />
+    <ClCompile Include="Context.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DDSTextureLoader.h" />
@@ -65,7 +66,8 @@
     </ClInclude>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Home.h" />
-    <ClInclude Include="InitDirectX11.h" />
+    <ClInclude Include="Device.h" />
+    <ClInclude Include="Context.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Tutorial01.rc" />
