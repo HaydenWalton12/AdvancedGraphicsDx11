@@ -33,12 +33,12 @@ HRESULT Context::SetSwapChain(Microsoft::WRL::ComPtr<ID3D11Device> device)
     // Obtain DXGI factory from device (since we used nullptr for pAdapter above)
 
     // Create swap chain
-
+    Microsoft::WRL::ComPtr<ID3D11Device1> device_1;
     hr = _pdxgiFactory1.Get()->QueryInterface(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(_pdxgiFactory2.GetAddressOf()));
     if (_pdxgiFactory2.Get())
     {
         // DirectX 11.1 or later
-        hr = device->QueryInterface(__uuidof(ID3D11Device), reinterpret_cast<void**>(device.GetAddressOf()));
+        hr = device->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(device_1.GetAddressOf()));
         if (SUCCEEDED(hr))
         {
             (void)_pDeviceContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(_pDeviceContext1.GetAddressOf()));
@@ -84,5 +84,5 @@ HRESULT Context::SetSwapChain(Microsoft::WRL::ComPtr<ID3D11Device> device)
     _pdxgiFactory1->MakeWindowAssociation(_Hwnd, DXGI_MWA_NO_ALT_ENTER);
 
     _pdxgiFactory1->Release();
-    return hr;
+    return S_OK;
 }

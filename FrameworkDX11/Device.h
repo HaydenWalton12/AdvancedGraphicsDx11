@@ -36,7 +36,8 @@ public:
 
 	    Microsoft::WRL::ComPtr<ID3D11Device> _pd3dDevice;
 	    Microsoft::WRL::ComPtr<ID3D11Device> GetDevice() { return _pd3dDevice; }
-	
+
+
 	
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> _pRenderTargetView;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView>GetRenderTargetView() { return  _pRenderTargetView; }
