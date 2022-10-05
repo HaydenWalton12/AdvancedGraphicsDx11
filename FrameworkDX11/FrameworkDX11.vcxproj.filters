@@ -30,11 +30,12 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Home.cpp" />
+    <ClCompile Include="InitDirectX11.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="DrawableGameObject.h" />
-    <ClInclude Include="main.h" />
     <CLInclude Include="resource.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="structures.h" />
@@ -63,6 +64,8 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Home.h" />
+    <ClInclude Include="InitDirectX11.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Tutorial01.rc" />
