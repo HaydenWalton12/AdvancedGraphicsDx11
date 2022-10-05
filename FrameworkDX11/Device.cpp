@@ -107,7 +107,9 @@ void Device::CreateDepth()
     descDSV.Format = descDepth.Format;
     descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
     descDSV.Texture2D.MipSlice = 0;
+
     _pd3dDevice->CreateDepthStencilView(_pDepthStencil.Get(), &descDSV, _pDepthStencilView.GetAddressOf());
+
 
 }
 
@@ -117,7 +119,7 @@ void Device::CreateRenderTargetView(Microsoft::WRL::ComPtr<IDXGISwapChain> swap_
 {
     // Create a render target view
     ID3D11Texture2D* pBackBuffer = nullptr;
-    swap_chain.Get()->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+    swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
     _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &_pRenderTargetView);
     pBackBuffer->Release();
 }
