@@ -80,10 +80,12 @@ HRESULT Device::CreateDevice(Context* c_context,Microsoft::WRL::ComPtr<ID3D11Dev
     c_context->SetDeviceContext(device_context);
 
     return S_OK;
+
 }
 
 
 
+/*Depth Works  We Set Render Target In Context*/
 void Device::CreateDepth()
 {
     // Create depth stencil texture

@@ -21,10 +21,12 @@ void Camera::ImGuiCameraSettings()
 
 DirectX::XMMATRIX Camera::CalculateViewMatrix()
 {
+
 	DirectX::XMVECTOR eye = DirectX::XMLoadFloat4(&_Position);
 	DirectX::XMVECTOR at = DirectX::XMLoadFloat4(&_At);
 	DirectX::XMVECTOR up = DirectX::XMLoadFloat4(&_Up);
-	return	DirectX::XMMatrixLookAtLH(eye, at, up);
+	
+	return	DirectX::XMMatrixLookToLH(eye, at, up);
 }
 
 DirectX::XMMATRIX Camera::CalculateProjectionMatrix()

@@ -14,6 +14,7 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
     _pDevice = new Device(hwnd, width, height);
     _pContext = new Context(hwnd, width, height);
     _pDevice->CreateDevice(_pContext , _pContext->GetDeviceContext().Get() , _pContext->GetFactory1().Get());
+    _pContext->SetViewport(1280, 720);
     _pContext->SetSwapChain(_pDevice->GetDevice().Get());
     _pDevice->CreateRenderTargetView(_pContext->GetSwapChain().Get());
 
@@ -46,7 +47,7 @@ HRESULT Home::InitScene(int width, int height)
         //Initialise Camera
     int g_viewWidth = 720;
     int g_viewHeight = 1280;
-    _pCamera = new Camera(XMFLOAT4(0.0f, 0.0f, -3.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
+    _pCamera = new Camera(XMFLOAT4(0.0f, 20.0f, -50.0f, 0.0f), XMFLOAT4(0.0f, -0.05f, 0.05f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
     
     g_GameObject.initMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
     g_GameObject.initialise_shader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"shader.fx", L"shader.fx");
