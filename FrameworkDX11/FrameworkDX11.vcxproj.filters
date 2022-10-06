@@ -80,4 +80,7 @@
       <UniqueIdentifier>{9cd25f8a-371e-42d9-931c-0737a3482273}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shader1.fx" />
+  </ItemGroup>
 </Project>

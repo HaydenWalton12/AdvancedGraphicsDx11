@@ -84,6 +84,7 @@ void Home::Render()
     ImGui::NewFrame();
     ImGui::Begin("Engine Simulations");
     _pCamera->ImGuiCameraSettings();
+    g_GameObject._shader->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
     ImGui::End();
     //Render IMGUI
     ImGui::Render();

@@ -9,6 +9,8 @@ Shader::Shader(ID3D11Device* device, ID3D11DeviceContext* device_context, const 
 {
 	ID3D11InputLayout* vertex_layout;
 
+
+	vertex_shader_path;
 	ID3DBlob* pVSBlob = nullptr;
 
 	CompileShaderFromFile(vertex_shader_path, "VS", "vs_4_0", &pVSBlob);
@@ -64,11 +66,21 @@ Shader::Shader(ID3D11Device* device, const wchar_t* pixel_shader_path)
 
 Shader::Shader(ID3D11Device* device, ID3D11DeviceContext* device_context, const wchar_t* vertex_shader_path, const wchar_t* pixel_shader_path)
 {
+	_Pixel_File = pixel_shader_path;
+	_Vertex_File = vertex_shader_path;
+
+	CreateVertexShader(device , device_context);
+	CreatePixelShader(device, device_context);
+
+}
+
+void Shader::CreateVertexShader(ID3D11Device* device, ID3D11DeviceContext* device_context)
+{
 	ID3D11InputLayout* vertex_layout;
 
 	ID3DBlob* pVSBlob = nullptr;
+	CompileShaderFromFile(_Vertex_File, "VS", "vs_4_0", &pVSBlob);
 
-	CompileShaderFromFile(vertex_shader_path, "VS", "vs_4_0", &pVSBlob);
 
 	// Create the pixel shader
 	hr = device->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &_VertexShader);
@@ -97,11 +109,12 @@ Shader::Shader(ID3D11Device* device, ID3D11DeviceContext* device_context, const 
 
 	//Needs Rendering Command System
 	device_context->IASetInputLayout(vertex_layout);
-
+}
+void Shader::CreatePixelShader(ID3D11Device* device, ID3D11DeviceContext* device_context)
+{
 	ID3DBlob* pPSBlob = nullptr;
 
-	CompileShaderFromFile(pixel_shader_path, "PS", "ps_4_0", &pPSBlob);
-
+	CompileShaderFromFile(_Pixel_File, "PS", "ps_4_0", &pPSBlob);
 
 	// Create the pixel shader
 	hr = device->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &_PixelShader);
@@ -109,8 +122,42 @@ Shader::Shader(ID3D11Device* device, ID3D11DeviceContext* device_context, const 
 	//Check Error Method
 	if (FAILED(hr))
 	{
-		MessageBox(nullptr,
-			L"The FX File Pixel Shader Cannot be Compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
+		MessageBox(nullptr, L"The FX File Pixel Shader Cannot be Compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
+	}
+}
+
+void Shader::ImGuiShaderSettings(ID3D11Device* device, ID3D11DeviceContext* device_context)
+{
+
+	
+	if (ImGui::CollapsingHeader("Shader Controls"))
+	{
+		//This wouldnt work since setting limit to sizeof vertex/pixel input will automatically be zero since they are currently empty
+		//ImGui::Text("Vertex Shader File");
+		//ImGui::InputText("##Vertex Shader Input", &vertex_input , sizeof(vertex_input));
+		//ImGui::Text("Pixel Shader File");
+		//ImGui::InputText("##Pixel Shader Input", &pixel_input, sizeof(pixel_input));
+		const wchar_t* c;
+		const wchar_t* d;
+		 static char vertex_path[64] = "";
+		 static char pixel_path[64] = "";
+		ImGui::Text("Vertex Shader File");
+		ImGui::InputText("Vertex Shader Input", vertex_path, IM_ARRAYSIZE(vertex_path));
+		ImGui::Text("Pixel Shader File");
+		ImGui::InputText("Pixel Shader Input", pixel_path, IM_ARRAYSIZE(pixel_path));
+		if (ImGui::Button("Set New Shaders"))
+		{
+			wchar_t* a = new wchar_t;
+			const wchar_t* b;
+		
+			mbstowcs(a, vertex_path , 64);
+			_Vertex_File = a;
+			CreateVertexShader(device, device_context);
+			
+		}
+			
+
+
 	}
 }
 

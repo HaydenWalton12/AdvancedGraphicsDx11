@@ -4,6 +4,11 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 
+#include "imgui.h"
+#include "imgui_internal.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx11.h"
+
 class Shader
 {
 public:
@@ -27,7 +32,11 @@ public:
 	void SetPixelShader(Microsoft::WRL::ComPtr<ID3D11PixelShader> pixel_shader)
 	{
 		_PixelShader = pixel_shader;
+	
 	}
+	void CreateVertexShader(ID3D11Device* device, ID3D11DeviceContext* device_context);
+	void CreatePixelShader(ID3D11Device* device, ID3D11DeviceContext* device_context);
+	void ImGuiShaderSettings(ID3D11Device* device, ID3D11DeviceContext* device_context);
 private:
 	//ComPtr - Creates a smart pointer that creates an interface to the type given , gives further functionality of raw pointer managament via this function
 	//Smart Pointer - Essentially wraps around a raw/primitive pointer , manages the lifetime of this pointer automatically.
@@ -40,7 +49,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> _VertexShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> _PixelShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> _VertexLayout;
-	WCHAR* _File;
+	const wchar_t* _Pixel_File;
+	const wchar_t* _Vertex_File;
 
 
 	//--------------------------------------------------------------------------------------
