@@ -44,14 +44,14 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
 HRESULT Home::InitScene(int width, int height)
 {
         //Initialise Camera
-    int 	g_viewWidth = 720;
-    int     g_viewHeight = 1280;
-        _pCamera = new Camera(XMFLOAT4(0.0f, 0.0f, -3.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
-       
-        g_GameObject.initMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-        g_GameObject.initialise_shader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"shader.fx", L"shader.fx");
+    int g_viewWidth = 720;
+    int g_viewHeight = 1280;
+    _pCamera = new Camera(XMFLOAT4(0.0f, 0.0f, -3.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
+    
+    g_GameObject.initMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    g_GameObject.initialise_shader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"shader.fx", L"shader.fx");
 
-        return S_OK;
+    return S_OK;
     
 
 }
