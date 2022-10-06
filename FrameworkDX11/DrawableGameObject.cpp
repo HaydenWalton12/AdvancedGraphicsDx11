@@ -1,4 +1,5 @@
 #include "DrawableGameObject.h"
+#include "Device.h"
 
 using namespace std;
 using namespace DirectX;
