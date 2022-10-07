@@ -58,16 +58,31 @@ enum LightType
 
 struct Light
 {
+	//Creates Default light
 	Light()
 		: Position(0.0f, 0.0f, 0.0f, 1.0f)
 		, Direction(0.0f, 0.0f, 1.0f, 0.0f)
 		, Color(1.0f, 1.0f, 1.0f, 1.0f)
-		, SpotAngle(DirectX::XM_PIDIV2)
+		, SpotAngle(1.5)
 		, ConstantAttenuation(1.0f)
 		, LinearAttenuation(0.0f)
 		, QuadraticAttenuation(0.0f)
 		, LightType(DirectionalLight)
 		, Enabled(0)
+	{}
+
+
+	Light(XMFLOAT4 position, XMFLOAT4 direction, XMFLOAT4 colour, float spot_angle , float constant_attenuation , float linear_attenuation , float quadratic_attenuation 
+	     ,int light_type , int enabled)
+		: Position(position.x, position.y, position.z, position.w)
+		, Direction(direction.x, direction.y, direction.z, direction.w)
+		, Color(colour.x, colour.y, colour.z, colour.w)
+		, SpotAngle(spot_angle)
+		, ConstantAttenuation(constant_attenuation)
+		, LinearAttenuation(linear_attenuation)
+		, QuadraticAttenuation(quadratic_attenuation)
+		, LightType(light_type)
+		, Enabled(enabled)
 	{}
 
 	DirectX::XMFLOAT4    Position;

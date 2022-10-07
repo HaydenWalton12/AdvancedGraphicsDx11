@@ -47,7 +47,7 @@ HRESULT Home::InitScene(int width, int height)
         //Initialise Camera
     int g_viewWidth = 720;
     int g_viewHeight = 1280;
-    _pCamera = new Camera(XMFLOAT4(0.0f, 20.0f, -50.0f, 0.0f), XMFLOAT4(0.0f, -0.05f, 0.05f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
+    _pCamera = new Camera(XMFLOAT4(0.0f, 2.0f, -4.0f, 0.0f), XMFLOAT4(0.0f, -0.05f, 0.05f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
     
     g_GameObject.initMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
     g_GameObject.initialise_shader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"shader.fx", L"shader.fx");
@@ -67,13 +67,13 @@ void Home::Render()
     Input(_Instance);
 
 
-    //float t = CalculateDeltaTime(); // capped at 60 fps
-    //if (t == 0.0f)
-    //    return;
+    float t = CalculateDeltaTime(); // capped at 60 fps
+    if (t == 0.0f)
+        return;
 
 
     // Update the cube transform, material etc. 
-    g_GameObject.update(0.0016, _pContext->GetDeviceContext().Get());
+    g_GameObject.update(t, _pContext->GetDeviceContext().Get());
     UpdateConstantBuffer();
     Draw();
 
@@ -85,6 +85,20 @@ void Home::Render()
     ImGui::Begin("Engine Simulations");
     _pCamera->ImGuiCameraSettings();
     g_GameObject._shader->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    if (ImGui::CollapsingHeader("Active Lighting Controls"))
+    {
+
+        ImGui::DragFloat("X", &_Lighting.Position.x ,0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Y", &_Lighting.Position.y, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Z", &_Lighting.Position.z, 0.1f, -20.0f, 20.0f);
+
+        //ImGui::DragFloat3("LookAt", &_At.x, 0.015f);
+        //ImGui::DragFloat3("Up", &_Up.x, 0.005f);
+        //ImGui::SliderAngle("FOV", &_FOV, 5.0f, 160.0f);
+        //ImGui::DragFloat("Near Plane", &_NearZ, 0.01f, 0.1f, 100.0f);
+        //ImGui::DragFloat("Far Plane", &_FarZ, 0.1f, 0.2f, 5000.0f);
+
+    }
     ImGui::End();
     //Render IMGUI
     ImGui::Render();
@@ -176,27 +190,28 @@ void Home::UpdateConstantBuffer()
     _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);
    
     //I Store Lighting values in constant buffer function since we pass the light property values to the constant buffer, we can change this eventual;ly
-    Light light;
-    light.Enabled = static_cast<int>(true);
-    light.LightType = PointLight;
-    light.Color = XMFLOAT4(Colors::White);
-    light.SpotAngle = XMConvertToRadians(45.0f);
-    light.ConstantAttenuation = 1.0f;
-    light.LinearAttenuation = 1;
-    light.QuadraticAttenuation = 1;
+    
+    _Lighting.Enabled = static_cast<int>(true);
+    _Lighting.LightType = PointLight;
+    _Lighting.Color = XMFLOAT4(Colors::White);
+    _Lighting.SpotAngle = XMConvertToRadians(45.0f);
+    _Lighting.ConstantAttenuation = 1.0f;
+    _Lighting.LinearAttenuation = 1;
+    _Lighting.QuadraticAttenuation = 1;
 
 
-    // set up the light
-    XMFLOAT4 LightPosition = XMFLOAT4(0.0f, 0.0f, -5.0f, 0.0f);
-    light.Position = LightPosition;
-    XMVECTOR LightDirection = XMVectorSet(-LightPosition.x, -LightPosition.y, -LightPosition.z, 0.0f);
+
+
+
+    XMVECTOR LightDirection = XMVectorSet(-_Lighting.Position.x, -_Lighting.Position.y, -_Lighting.Position.z, 0.0f);
     LightDirection = XMVector3Normalize(LightDirection);
-    XMStoreFloat4(&light.Direction, LightDirection);
+    XMStoreFloat4(&_Lighting.Direction, LightDirection);
 
-    LightPropertiesConstantBuffer lightProperties;
-    lightProperties.EyePosition = LightPosition;
-    lightProperties.Lights[0] = light;
-    _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetLightConstantBuffer().Get(), 0, nullptr, &lightProperties, 0, 0);
+
+    
+
+    _Lighting_Properties.Lights[0] = _Lighting;
+    _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetLightConstantBuffer().Get(), 0, nullptr, &_Lighting_Properties, 0, 0);
 
 
 }

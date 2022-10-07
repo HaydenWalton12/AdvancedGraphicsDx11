@@ -51,7 +51,8 @@ public:
 
 	Device* _pDevice;
 	Context* _pContext;
-	
+	Light _Lighting;
+	LightPropertiesConstantBuffer _Lighting_Properties;
 	void InitialiseApplication(HWND hwnd, HINSTANCE instance, int width, int height);
 	HRESULT InitScene(int width, int height);
 	void Render();
