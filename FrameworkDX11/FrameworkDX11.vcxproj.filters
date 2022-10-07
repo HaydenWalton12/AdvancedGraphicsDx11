@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\stone.dds" />
+    <Image Include="normal.dds" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="imgui">

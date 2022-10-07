@@ -46,6 +46,7 @@ private:
 	ID3D11Buffer*						m_pVertexBuffer;
 	ID3D11Buffer*						m_pIndexBuffer;
 	ID3D11ShaderResourceView*			m_pTextureResourceView;
+	ID3D11ShaderResourceView*			m_pNormalResourceView;
 	ID3D11SamplerState *				m_pSamplerLinear;
 	MaterialPropertiesConstantBuffer	m_material;
 	ID3D11Buffer*						m_pMaterialConstantBuffer = nullptr;

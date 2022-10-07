@@ -98,6 +98,8 @@ void Shader::CreateVertexShader(ID3D11Device* device, ID3D11DeviceContext* devic
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		    { "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	UINT num_elements = ARRAYSIZE(layout);
@@ -137,8 +139,7 @@ void Shader::ImGuiShaderSettings(ID3D11Device* device, ID3D11DeviceContext* devi
 		//ImGui::InputText("##Vertex Shader Input", &vertex_input , sizeof(vertex_input));
 		//ImGui::Text("Pixel Shader File");
 		//ImGui::InputText("##Pixel Shader Input", &pixel_input, sizeof(pixel_input));
-		const wchar_t* c;
-		const wchar_t* d;
+
 		 static char vertex_path[64] = "";
 		 static char pixel_path[64] = "";
 		ImGui::Text("Vertex Shader File");
@@ -148,11 +149,12 @@ void Shader::ImGuiShaderSettings(ID3D11Device* device, ID3D11DeviceContext* devi
 		if (ImGui::Button("Set New Shaders"))
 		{
 			wchar_t* a = new wchar_t;
-			const wchar_t* b;
-		
+
 			mbstowcs(a, vertex_path , 64);
 			_Vertex_File = a;
+			_Vertex_File = a;
 			CreateVertexShader(device, device_context);
+			CreatePixelShader(device, device_context);
 			
 		}
 			
