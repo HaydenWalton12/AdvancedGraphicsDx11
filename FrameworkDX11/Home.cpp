@@ -192,12 +192,12 @@ void Home::UpdateConstantBuffer()
     //I Store Lighting values in constant buffer function since we pass the light property values to the constant buffer, we can change this eventual;ly
     
     _Lighting.Enabled = static_cast<int>(true);
-    _Lighting.LightType = PointLight;
+    _Lighting.LightType = SpotLight;
     _Lighting.Color = XMFLOAT4(Colors::White);
-    _Lighting.SpotAngle = XMConvertToRadians(45.0f);
+    _Lighting.SpotAngle = XMConvertToRadians(1.0f);
     _Lighting.ConstantAttenuation = 1.0f;
     _Lighting.LinearAttenuation = 1;
-    _Lighting.QuadraticAttenuation = 1;
+    _Lighting.QuadraticAttenuation = 0.5;
 
 
 
