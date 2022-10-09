@@ -14,8 +14,8 @@ struct SimpleVertex
 	XMFLOAT3 Normal;
 	XMFLOAT2 TexCoord;
 	//Additional Values For Bump Mapping Technique Normal Mapping
-	XMFLOAT3 tangent;
-	XMFLOAT3 biTangent;
+	XMFLOAT3 Tangent;
+	XMFLOAT3 BiTangent;
 };
 
 class Context;
