@@ -368,6 +368,9 @@
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="Lighting.h" />
+    <ClInclude Include="ObjectCube.h" />
+    <ClInclude Include="Objects.h" />
+    <ClInclude Include="OBJLoader.h" />
     <CLInclude Include="resource.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="structures.h" />
@@ -389,6 +392,9 @@
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="Lighting.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ObjectCube.cpp" />
+    <ClCompile Include="Objects.cpp" />
+    <ClCompile Include="OBJLoader.cpp" />
     <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <ItemGroup>

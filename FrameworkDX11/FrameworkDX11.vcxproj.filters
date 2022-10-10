@@ -34,6 +34,9 @@
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="Context.cpp" />
     <ClCompile Include="Lighting.cpp" />
+    <ClCompile Include="Objects.cpp" />
+    <ClCompile Include="OBJLoader.cpp" />
+    <ClCompile Include="ObjectCube.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DDSTextureLoader.h" />
@@ -70,6 +73,9 @@
     <ClInclude Include="Device.h" />
     <ClInclude Include="Context.h" />
     <ClInclude Include="Lighting.h" />
+    <ClInclude Include="Objects.h" />
+    <ClInclude Include="OBJLoader.h" />
+    <ClInclude Include="ObjectCube.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Tutorial01.rc" />

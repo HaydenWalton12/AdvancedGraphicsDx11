@@ -30,7 +30,8 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
 
     _pDevice->CreateDepth();
 
-
+    _Objects = new Objects(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _Cube = new ObjectCube();
 
 
     InitDirectInput(instance);

@@ -19,6 +19,9 @@
 #include "Camera.h"
 
 
+#include "Objects.h"
+#include "ObjectCube.h"
+
 #include "Device.h"
 #include "Context.h"
 
@@ -49,6 +52,9 @@ public:
 	typedef vector<DrawableGameObject*> vecDrawables;
 	Camera* _pCamera;
 	HINSTANCE _Instance;
+
+	Objects* _Objects;
+	ObjectCube* _Cube;
 
 	Device* _pDevice;
 	Context* _pContext;
