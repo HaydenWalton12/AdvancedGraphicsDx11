@@ -83,8 +83,7 @@ struct VS_INPUT
     float4 Pos : POSITION;
     float3 Norm : NORMAL;
     float2 Tex : TEXCOORD0;
-    float3 Tan : TANGENT;
-    float3 Binorm : BINORMAL;
+ 
 	
 };
 
@@ -94,10 +93,8 @@ struct PS_INPUT
     float4 worldPos : POSITION;
     float3 Norm : NORMAL;
     float2 Tex : TEXCOORD0;
-    float3 Tan : TANGENT;
-    float3 Binorm : BINORMAL;
-    float3 eyeVectorTS : POSITION1;
-    float3 lightVectorTS : POSITION2;
+
+
 
 };
 
@@ -186,7 +183,6 @@ LightingResult ComputeLighting(float4 vertexPos, float3 N)
 
 float3 VectorToTangentSpace(float3 vectorV, float3x3 TBN_inv)
 {
-	
 	//Transform From Tangent space to world space
     float3 tangentSpaceNormal = normalize(mul(vectorV, TBN_inv));
     return tangentSpaceNormal;
@@ -207,28 +203,12 @@ PS_INPUT VS(VS_INPUT input)
     output.Pos = mul(output.Pos, Projection);
 
     output.Tex = input.Tex;
-
-    float3 vertexToEye = EyePosition - worldPos.xyz;
-    float3 vertexToLight = Lights[0].Position - worldPos.xyz;
 	
 	// multiply the normal by the world transform (to go from model space to world space)
     output.Norm = mul(float4(input.Norm, 0), World).xyz;
 	
-	//Build TBN Matrix
-    float3 T = normalize(mul(input.Tan, World));
-    float3 B = normalize(mul(input.Binorm, World));
-    float3 N = normalize(mul(input.Norm, World));
-
-    float3x3 TBN = float3x3(T, B, N);
-    float3x3 TBN_inv = transpose(TBN);
-	
-    output.eyeVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
-	
-    output.lightVectorTS = VectorToTangentSpace(vertexToLight.xyz, TBN_inv);
 	
 
-
-    
     return output;
 }
 

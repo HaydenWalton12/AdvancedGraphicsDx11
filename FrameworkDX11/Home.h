@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include "DrawableGameObject.h"
+#include "Lighting.h"
 #include "structures.h"
 
 #include <vector>
@@ -51,7 +52,8 @@ public:
 
 	Device* _pDevice;
 	Context* _pContext;
-	Light _Lighting;
+	Lighting* _Lighting;
+	Light _Light;
 	LightPropertiesConstantBuffer _Lighting_Properties;
 	void InitialiseApplication(HWND hwnd, HINSTANCE instance, int width, int height);
 	HRESULT InitScene(int width, int height);

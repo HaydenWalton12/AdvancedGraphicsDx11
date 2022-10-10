@@ -33,6 +33,7 @@
     <ClCompile Include="Home.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="Context.cpp" />
+    <ClCompile Include="Lighting.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DDSTextureLoader.h" />
@@ -68,6 +69,7 @@
     <ClInclude Include="Home.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="Context.h" />
+    <ClInclude Include="Lighting.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Tutorial01.rc" />

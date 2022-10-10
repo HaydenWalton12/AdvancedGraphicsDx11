@@ -1,5 +1,6 @@
 #include "Device.h"
 #include "Context.h"
+#include "Lighting.h"
 
 
 Device::~Device()

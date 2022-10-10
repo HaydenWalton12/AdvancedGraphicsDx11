@@ -49,6 +49,9 @@ HRESULT Home::InitScene(int width, int height)
     int g_viewHeight = 1280;
     _pCamera = new Camera(XMFLOAT4(0.0f, 2.0f, -4.0f, 0.0f), XMFLOAT4(0.0f, -0.05f, 0.05f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
     
+    _Lighting->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _Lighting->initialise_shader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"shader.fx", L"shader.fx");
+
     g_GameObject.initMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
     g_GameObject.initialise_shader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"shader.fx", L"shader.fx");
 
@@ -74,6 +77,7 @@ void Home::Render()
 
     // Update the cube transform, material etc. 
     g_GameObject.update(t, _pContext->GetDeviceContext().Get());
+    _Lighting->update(t, _pContext->GetDeviceContext().Get());
     UpdateConstantBuffer();
     Draw();
 
@@ -88,16 +92,9 @@ void Home::Render()
     if (ImGui::CollapsingHeader("Active Lighting Controls"))
     {
 
-        ImGui::DragFloat("X", &_Lighting.Position.x ,0.1f, -20.0f, 20.0f);
-        ImGui::DragFloat("Y", &_Lighting.Position.y, 0.1f, -20.0f, 20.0f);
-        ImGui::DragFloat("Z", &_Lighting.Position.z, 0.1f, -20.0f, 20.0f);
-
-        //ImGui::DragFloat3("LookAt", &_At.x, 0.015f);
-        //ImGui::DragFloat3("Up", &_Up.x, 0.005f);
-        //ImGui::SliderAngle("FOV", &_FOV, 5.0f, 160.0f);
-        //ImGui::DragFloat("Near Plane", &_NearZ, 0.01f, 0.1f, 100.0f);
-        //ImGui::DragFloat("Far Plane", &_FarZ, 0.1f, 0.2f, 5000.0f);
-
+        ImGui::DragFloat("X", &_Light.Position.x ,0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Y", &_Light.Position.y, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Z", &_Light.Position.z, 0.1f, -20.0f, 20.0f);
     }
     ImGui::End();
     //Render IMGUI
@@ -191,27 +188,28 @@ void Home::UpdateConstantBuffer()
    
     //I Store Lighting values in constant buffer function since we pass the light property values to the constant buffer, we can change this eventual;ly
     
-    _Lighting.Enabled = static_cast<int>(true);
-    _Lighting.LightType = SpotLight;
-    _Lighting.Color = XMFLOAT4(Colors::White);
-    _Lighting.SpotAngle = XMConvertToRadians(1.0f);
-    _Lighting.ConstantAttenuation = 1.0f;
-    _Lighting.LinearAttenuation = 1;
-    _Lighting.QuadraticAttenuation = 0.5;
+    _Light.Enabled = static_cast<int>(true);
+    _Light.LightType = SpotLight;
+    _Light.Color = XMFLOAT4(Colors::White);
+    _Light.SpotAngle = XMConvertToRadians(1.0f);
+    _Light.ConstantAttenuation = 1.0f;
+    _Light.LinearAttenuation = 1;
+    _Light.QuadraticAttenuation = 0.5;
 
 
 
 
 
-    XMVECTOR LightDirection = XMVectorSet(-_Lighting.Position.x, -_Lighting.Position.y, -_Lighting.Position.z, 0.0f);
+    XMVECTOR LightDirection = XMVectorSet(-_Light.Position.x, -_Light.Position.y, -_Light.Position.z, 0.0f);
     LightDirection = XMVector3Normalize(LightDirection);
-    XMStoreFloat4(&_Lighting.Direction, LightDirection);
+    XMStoreFloat4(&_Light.Direction, LightDirection);
 
 
     
 
-    _Lighting_Properties.Lights[0] = _Lighting;
+    _Lighting_Properties.Lights[0] = _Light;
     _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetLightConstantBuffer().Get(), 0, nullptr, &_Lighting_Properties, 0, 0);
+
 
 
 }
@@ -227,6 +225,7 @@ void Home::Draw()
     _pContext->GetDeviceContext()->PSSetConstantBuffers(1, 1, &materialCB);
     UpdateConstantBuffer();
     g_GameObject.draw(_pContext->GetDeviceContext().Get());
+    _Lighting->draw(_pContext->GetDeviceContext().Get());
 }
 
 
