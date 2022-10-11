@@ -29,6 +29,7 @@ public:
 
 	void								update(float t, ID3D11DeviceContext* pContext);
 	void								draw(ID3D11DeviceContext* pContext);
+	
 	ID3D11Buffer*						getVertexBuffer() { return m_pVertexBuffer; }
 	ID3D11Buffer*						getIndexBuffer() { return m_pIndexBuffer; }
 	ID3D11ShaderResourceView**			getTextureResourceView() { return &m_pTextureResourceView; 	}
@@ -47,6 +48,8 @@ private:
 	ID3D11Buffer*						m_pIndexBuffer;
 	ID3D11ShaderResourceView*			m_pTextureResourceView;
 	ID3D11ShaderResourceView*			m_pNormalResourceView;
+	ID3D11ShaderResourceView* m_pDissplacementResourceView;
+
 	ID3D11SamplerState *				m_pSamplerLinear;
 	MaterialPropertiesConstantBuffer	m_material;
 	ID3D11Buffer*						m_pMaterialConstantBuffer = nullptr;

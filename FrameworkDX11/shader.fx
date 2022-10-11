@@ -15,6 +15,9 @@ cbuffer ConstantBuffer : register(b0)
     matrix View;
     matrix Projection;
     float4 vOutputColor;
+    float3 EyePosW;
+
+
 }
 
 Texture2D txDiffuse : register(t0);
@@ -62,7 +65,8 @@ struct Light
     float ConstantAttenuation; // 4 bytes
     float LinearAttenuation; // 4 bytes
     float QuadraticAttenuation; // 4 bytes
-										//----------------------------------- (16 byte boundary)
+ 
+						//----------------------------------- (16 byte boundary)
     int LightType; // 4 bytes
     bool Enabled; // 4 bytes
     int2 Padding; // 8 bytes
@@ -97,8 +101,7 @@ struct PS_INPUT
     float2 Tex : TEXCOORD0;
     float3 Tan : TANGENT;
     float3 Binorm : BINORMAL;
-    float3 eyeVectorTS : POSITION1;
-    float3 lightVectorTS : POSITION2;
+
 
 };
 
@@ -161,7 +164,8 @@ LightingResult DoPointLight(Light light, float3 vertexToEye, float4 vertexPos, f
 LightingResult ComputeLighting(float4 vertexPos, float3 N)
 {
     float3 vertexToEye = normalize(EyePosition - vertexPos).xyz;
-
+    //float3 vertexToEye = EyePosition - IN.worldPos.xyz;
+    //float3 vertexToLight = Lights[0].Position - IN.worldPos.xyz;
     LightingResult totalResult = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
 
 	[unroll]
@@ -185,6 +189,14 @@ LightingResult ComputeLighting(float4 vertexPos, float3 N)
 }
 
 
+float2 ParallaxMapping(float2 tex_coords, float3 viewing_direction)
+{
+    float height_scale = 0.1f;
+    float height = txParallax.Sample(samLinear, tex_coords).z;
+    float2 p = viewing_direction.xy / viewing_direction.z * (height * height_scale);
+    return tex_coords - p;
+}
+
 float3 VectorToTangentSpace(float3 vectorV, float3x3 TBN_inv)
 {
 	
@@ -197,6 +209,7 @@ float3 VectorToTangentSpace(float3 vectorV, float3x3 TBN_inv)
 //--------------------------------------------------------------------------------------
 PS_INPUT VS(VS_INPUT input)
 {
+
 	//VertexShader Cide
     PS_INPUT output = (PS_INPUT) 0;
 	
@@ -209,23 +222,26 @@ PS_INPUT VS(VS_INPUT input)
 
     output.Tex = input.Tex;
 
-    float3 vertexToEye = EyePosition - worldPos.xyz;
-    float3 vertexToLight = Lights[0].Position - worldPos.xyz;
-	
-	// multiply the normal by the world transform (to go from model space to world space)
-    output.Norm = mul(float4(input.Norm, 0), World).xyz;
-	
-	//Build TBN Matrix
-    float3 T = normalize(mul(input.Tan, World));
-    float3 B = normalize(mul(input.Binorm, World));
-    float3 N = normalize(mul(input.Norm, World));
 
-    float3x3 TBN = float3x3(T, B, N);
-    float3x3 TBN_inv = transpose(TBN);
 	
-    output.eyeVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
+    output.Norm = mul(float4(input.Norm, 0), World).xyz;
+    
+    output.Binorm = normalize(mul(input.Binorm, World).xyz);
+    output.Tan = normalize(mul(input.Tan, World).xyz);
+
+	//Build TBN Matrix
+    //ISSUE - Input is fine ,however we do not calculate the output from said values, calculations are correct but we need to output the values, similar to
+    //how we "output.norm"
+    //float3 T = normalize(mul(input.Tan, World));
+    //float3 B = normalize(mul(input.Binorm, World));
+    //float3 N = normalize(mul(input.Norm, World));
+
+    //float3x3 TBN = float3x3(T, B, N);
+    //float3x3 TBN_inv = transpose(TBN);
 	
-    output.lightVectorTS = VectorToTangentSpace(vertexToLight.xyz, TBN_inv);
+    //output.eyeVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
+	
+    //output.lightVectorTS = VectorToTangentSpace(vertexToLight.xyz, TBN_inv);
 	
 
 
@@ -240,22 +256,40 @@ PS_INPUT VS(VS_INPUT input)
 
 float4 PS(PS_INPUT IN) : SV_TARGET
 {
-
+    float shadowFactor = 1;
+    float3x3 tbn = float3x3(IN.Tan, IN.Binorm, IN.Norm);
+    
+    float3x3 TBN_inv = transpose(tbn);
+    
+    //Eye Position is needed
+    float3 toEye = EyePosW;
+  
+    float3 viewDir = normalize(mul(tbn, EyePosition.xyz - IN.worldPos.xyz));
+    float3 toEyeTS = VectorToTangentSpace(toEye, TBN_inv);
+  
+     float2 calculated_texCoords = ParallaxMapping(IN.Tex, toEyeTS);
+    
+   
+    float3 bumpNormal = IN.Norm;
     float4 bumpMap;
     bumpMap = txNormal.Sample(samLinear, IN.Tex);
 	
 	//Exampnd the range of the normal value from (0 , +1) to (-1 , +1)
     bumpMap = (bumpMap * 2.0f) - 1.0f;
-    bumpMap = float4(normalize(bumpMap.xyz), 1);
-	
-    LightingResult lit = ComputeLighting(IN.worldPos, bumpMap);
+    bumpNormal = normalize(mul(bumpMap.xyz, tbn));
 
+    LightingResult
+    lit = ComputeLighting(IN.worldPos, bumpNormal);
+
+    //Issue With this is that all lighting appears upon the surface of the normal map
+    //lit = ComputeLighting(IN.worldPos, bumpMap);
+    
+    
     float4 texColor = { 1, 1, 1, 1 };
-    float4 texNormal = { 1, 1, 1, 1 };
     float4 emissive = Material.Emissive;
     float4 ambient = Material.Ambient * GlobalAmbient;
-    float4 diffuse = Material.Diffuse * lit.Diffuse;
-    float4 specular = Material.Specular * lit.Specular;
+    float4 diffuse = Material.Diffuse * lit.Diffuse ;
+    float4 specular = Material.Specular * lit.Specular ;
 
     if (Material.UseTexture)
     {
@@ -263,7 +297,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     }
 
 
-    float4 finalColor = (emissive + ambient + diffuse + specular) * texColor ;
+    float4 finalColor = (emissive + ambient + diffuse + specular) * texColor;
 
     return finalColor;
 }

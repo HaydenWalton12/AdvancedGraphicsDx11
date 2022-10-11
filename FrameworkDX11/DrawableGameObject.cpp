@@ -1,5 +1,6 @@
 #include "DrawableGameObject.h"
 #include "Device.h"
+#include <vector>
 
 using namespace std;
 using namespace DirectX;
@@ -51,86 +52,32 @@ void CalculateTangentBinormalLH(SimpleVertex v0, SimpleVertex v1, SimpleVertex v
 // so the index file would look like 0,1,2,3,4 and so on
 // it won't work with shared vertices as the tangent / binormal for a vertex is related to a specific face
 // REFERENCE this has largely been modified from "Mathematics for 3D Game Programmming and Computer Graphics" by Eric Lengyel
-void CalculateModelVectors(SimpleVertex* vertices, int vertexCount)
+void CalculateModelVectors(std::vector<SimpleVertex>& vertices, std::vector<WORD>&indices)
 {
 	int faceCount, i, index;
-	SimpleVertex vertex1, vertex2, vertex3;
-	XMFLOAT3 tangent, binormal, normal;
 
 
-	// Calculate the number of faces in the model.
-	faceCount = vertexCount / 3;
-
-	// Initialize the index to the model data.
-	index = 0;
 
 	// Go through all the faces and calculate the the tangent, binormal, and normal vectors.
-	for (i = 0; i < faceCount; i++)
+	for (int i = 0; i < 12; i++)
 	{
-		// Get the three vertices for this face from the model.
-		vertex1.Pos.x = vertices[index].Pos.x;
-		vertex1.Pos.y = vertices[index].Pos.y;
-		vertex1.Pos.z = vertices[index].Pos.z;
-		vertex1.TexCoord.x = vertices[index].TexCoord.x;
-		vertex1.TexCoord.y = vertices[index].TexCoord.y;
-		vertex1.Normal.x = vertices[index].Normal.x;
-		vertex1.Normal.y = vertices[index].Normal.y;
-		vertex1.Normal.z = vertices[index].Normal.z;
-		index++;
 
-		vertex2.Pos.x = vertices[index].Pos.x;
-		vertex2.Pos.y = vertices[index].Pos.y;
-		vertex2.Pos.z = vertices[index].Pos.z;
-		vertex2.TexCoord.x = vertices[index].TexCoord.x;
-		vertex2.TexCoord.y = vertices[index].TexCoord.y;
-		vertex2.Normal.x = vertices[index].Normal.x;
-		vertex2.Normal.y = vertices[index].Normal.y;
-		vertex2.Normal.z = vertices[index].Normal.z;
-		index++;
+		XMFLOAT3 tangent, binormal, normal;
 
-		vertex3.Pos.x = vertices[index].Pos.x;
-		vertex3.Pos.y = vertices[index].Pos.y;
-		vertex3.Pos.z = vertices[index].Pos.z;
-		vertex3.TexCoord.x = vertices[index].TexCoord.x;
-		vertex3.TexCoord.y = vertices[index].TexCoord.y;
-		vertex3.Normal.x = vertices[index].Normal.x;
-		vertex3.Normal.y = vertices[index].Normal.y;
-		vertex3.Normal.z = vertices[index].Normal.z;
-		index++;
-
+		index = i * 3;
 		// Calculate the tangent and binormal of that face.
-		CalculateTangentBinormalLH(vertex1, vertex2, vertex3, normal, tangent, binormal);
+		CalculateTangentBinormalLH(vertices[indices[index + 0]], vertices[indices[index + 1]], vertices[indices[index + 2]], normal, tangent, binormal);
 
 		// Store the normal, tangent, and binormal for this face back in the model structure.
-		vertices[index - 1].Normal.x = normal.x;
-		vertices[index - 1].Normal.y = normal.y;
-		vertices[index - 1].Normal.z = normal.z;
-		vertices[index - 1].Tangent.x = tangent.x;
-		vertices[index - 1].Tangent.y = tangent.y;
-		vertices[index - 1].Tangent.z = tangent.z;
-		vertices[index - 1].BiTangent.x = binormal.x;
-		vertices[index - 1].BiTangent.y = binormal.y;
-		vertices[index - 1].BiTangent.z = binormal.z;
+	
+		vertices[indices[index + 0]].Tangent = tangent;
+		vertices[indices[index + 1]].Tangent = tangent;
+		vertices[indices[index + 2]].Tangent = tangent;
 
-		vertices[index - 2].Normal.x = normal.x;
-		vertices[index - 2].Normal.y = normal.y;
-		vertices[index - 2].Normal.z = normal.z;
-		vertices[index - 2].Tangent.x = tangent.x;
-		vertices[index - 2].Tangent.y = tangent.y;
-		vertices[index - 2].Tangent.z = tangent.z;
-		vertices[index - 2].BiTangent.x = binormal.x;
-		vertices[index - 2].BiTangent.y = binormal.y;
-		vertices[index - 2].BiTangent.z = binormal.z;
+		vertices[indices[index + 0]].BiTangent = binormal;
+		vertices[indices[index + 1]].BiTangent = binormal;
+		vertices[indices[index + 2]].BiTangent = binormal;
 
-		vertices[index - 3].Normal.x = normal.x;
-		vertices[index - 3].Normal.y = normal.y;
-		vertices[index - 3].Normal.z = normal.z;
-		vertices[index - 3].Tangent.x = tangent.x;
-		vertices[index - 3].Tangent.y = tangent.y;
-		vertices[index - 3].Tangent.z = tangent.z;
-		vertices[index - 3].BiTangent.x = binormal.x;
-		vertices[index - 3].BiTangent.y = binormal.y;
-		vertices[index - 3].BiTangent.z = binormal.z;
 	}
 
 }
@@ -177,7 +124,7 @@ void DrawableGameObject::cleanup()
 HRESULT DrawableGameObject::initMesh(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContext)
 {
 	// Create vertex buffer
-	SimpleVertex vertices[] =
+	std::vector<SimpleVertex> vertices =
 	{
 		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
 		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
@@ -210,25 +157,7 @@ HRESULT DrawableGameObject::initMesh(ID3D11Device* pd3dDevice, ID3D11DeviceConte
 		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f) },
 	};
 
-	D3D11_BUFFER_DESC bd = {};
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * 24;
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA InitData = {};
-	InitData.pSysMem = vertices;
-	HRESULT hr = pd3dDevice->CreateBuffer(&bd, &InitData, &m_pVertexBuffer);
-	if (FAILED(hr))
-		return hr;
-
-	// Set vertex buffer
-	UINT stride = sizeof(SimpleVertex);
-	UINT offset = 0;
-	pContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
-
-	// Create index buffer
-	WORD indices[] =
+	std::vector<WORD> indices =
 	{
 		3,1,0,
 		2,1,3,
@@ -248,12 +177,31 @@ HRESULT DrawableGameObject::initMesh(ID3D11Device* pd3dDevice, ID3D11DeviceConte
 		22,20,21,
 		23,20,22
 	};
+	CalculateModelVectors(vertices, indices);
+
+	D3D11_BUFFER_DESC bd = {};
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(SimpleVertex) * 24;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA InitData = {};
+	InitData.pSysMem = &vertices[0];
+	HRESULT hr = pd3dDevice->CreateBuffer(&bd, &InitData, &m_pVertexBuffer);
+	if (FAILED(hr))
+		return hr;
+
+	// Set vertex buffer
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	pContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
+
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(WORD) * NUM_VERTICES;        // 36 vertices needed for 12 triangles in a triangle list
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
-	InitData.pSysMem = indices;
+	InitData.pSysMem = &indices[0];
 	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &m_pIndexBuffer);
 	if (FAILED(hr))
 		return hr;
@@ -270,10 +218,13 @@ HRESULT DrawableGameObject::initMesh(ID3D11Device* pd3dDevice, ID3D11DeviceConte
 		return hr;
 
 	// load and setup textures
-	hr = CreateDDSTextureFromFile(pd3dDevice, L"Resources\\TerracottaNormal.dds", nullptr, &m_pNormalResourceView);
+	hr = CreateDDSTextureFromFile(pd3dDevice, L"Resources\\Terracottanormal.dds", nullptr, &m_pNormalResourceView);
 	if (FAILED(hr))
 		return hr;
-
+		// load and setup textures
+	hr = CreateDDSTextureFromFile(pd3dDevice, L"Resources\\Heightmap.dds", nullptr, &m_pDissplacementResourceView);
+	if (FAILED(hr))
+		return hr;
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));
 	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -296,6 +247,7 @@ HRESULT DrawableGameObject::initMesh(ID3D11Device* pd3dDevice, ID3D11DeviceConte
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
 	hr = pd3dDevice->CreateBuffer(&bd, nullptr, &m_pMaterialConstantBuffer);
+
 	if (FAILED(hr))
 		return hr;
 
@@ -335,10 +287,9 @@ void DrawableGameObject::update(float t, ID3D11DeviceContext* pContext)
 	cummulativeTime += t;
 
 	// Cube:  Rotate around origin
-	/*XMMATRIX mSpin = XMMatrixRotationY(cummulativeTime);*/
 	XMMATRIX mScale = XMMatrixScaling(2.0f, 2.0f, 2.0f);
 	XMMATRIX mTranslate = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-	XMMATRIX world = mTranslate * mScale;
+	XMMATRIX world = mTranslate * mScale ;
 	XMStoreFloat4x4(&m_World, world);
 
 	pContext->UpdateSubresource(m_pMaterialConstantBuffer, 0, nullptr, &m_material, 0, 0);
@@ -349,7 +300,7 @@ void DrawableGameObject::draw(ID3D11DeviceContext* pContext)
 	
 	pContext->PSSetShaderResources(0, 1, &m_pTextureResourceView);
 	pContext->PSSetShaderResources(1, 1, &m_pNormalResourceView);
-
+	pContext->PSSetShaderResources(2, 1, &m_pDissplacementResourceView);
 	pContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
 
 	pContext->DrawIndexed(NUM_VERTICES, 0, 0);

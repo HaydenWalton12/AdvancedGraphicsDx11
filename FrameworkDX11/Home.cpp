@@ -187,6 +187,7 @@ void Home::UpdateConstantBuffer()
     cb1.mView = XMMatrixTranspose(_pCamera->CalculateViewMatrix());
     cb1.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
     cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
+    cb1.EyePosW = XMFLOAT3(_pCamera->GetUp().x , _pCamera->GetUp().y , _pCamera->GetUp().z);
     _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);
    
     //I Store Lighting values in constant buffer function since we pass the light property values to the constant buffer, we can change this eventual;ly

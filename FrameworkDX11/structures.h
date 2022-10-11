@@ -13,6 +13,7 @@ struct ConstantBuffer
 	XMMATRIX mView;
 	XMMATRIX mProjection;
 	XMFLOAT4 vOutputColor;
+	XMFLOAT3 EyePosW;
 };
 
 struct _Material
