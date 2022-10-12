@@ -6,81 +6,7 @@ using namespace std;
 using namespace DirectX;
 
 #define NUM_VERTICES 36
-void CalculateTangentBinormalLH(SimpleVertex v0, SimpleVertex v1, SimpleVertex v2, XMFLOAT3& normal, XMFLOAT3& tangent, XMFLOAT3& binormal)
-{
-	XMFLOAT3 edge1(v1.Pos.x - v0.Pos.x, v1.Pos.y - v0.Pos.y, v1.Pos.z - v0.Pos.z);
-	XMFLOAT3 edge2(v2.Pos.x - v0.Pos.x, v2.Pos.y - v0.Pos.y, v2.Pos.z - v0.Pos.z);
 
-	XMFLOAT2 deltaUV1(v1.TexCoord.x - v0.TexCoord.x, v1.TexCoord.y - v0.TexCoord.y);
-	XMFLOAT2 deltaUV2(v2.TexCoord.x - v0.TexCoord.x, v2.TexCoord.y - v0.TexCoord.y);
-
-	float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-
-	tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-	tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-	tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-	XMVECTOR tn = XMLoadFloat3(&tangent);
-	tn = XMVector3Normalize(tn);
-	XMStoreFloat3(&tangent, tn);
-
-	binormal.x = f * (deltaUV1.x * edge2.x - deltaUV2.x * edge1.x);
-	binormal.y = f * (deltaUV1.x * edge2.y - deltaUV2.x * edge1.y);
-	binormal.z = f * (deltaUV1.x * edge2.z - deltaUV2.x * edge1.z);
-
-	tn = XMLoadFloat3(&binormal);
-	tn = XMVector3Normalize(tn);
-	XMStoreFloat3(&binormal, tn);
-
-
-	XMVECTOR vv0 = XMLoadFloat3(&v0.Pos);
-	XMVECTOR vv1 = XMLoadFloat3(&v1.Pos);
-	XMVECTOR vv2 = XMLoadFloat3(&v2.Pos);
-
-	XMVECTOR e0 = vv1 - vv0;
-	XMVECTOR e1 = vv2 - vv0;
-
-	XMVECTOR e01cross = XMVector3Cross(e0, e1);
-	e01cross = XMVector3Normalize(e01cross);
-	XMFLOAT3 normalOut;
-	XMStoreFloat3(&normalOut, e01cross);
-	normal = normalOut;
-}
-
-
-// IMPORTANT NOTE!!
-// NOTE!! - this assumes each face is using its own vertices (no shared vertices)
-// so the index file would look like 0,1,2,3,4 and so on
-// it won't work with shared vertices as the tangent / binormal for a vertex is related to a specific face
-// REFERENCE this has largely been modified from "Mathematics for 3D Game Programmming and Computer Graphics" by Eric Lengyel
-void CalculateModelVectors(std::vector<SimpleVertex>& vertices, std::vector<WORD>&indices)
-{
-	int faceCount, i, index;
-
-
-
-	// Go through all the faces and calculate the the tangent, binormal, and normal vectors.
-	for (int i = 0; i < 12; i++)
-	{
-
-		XMFLOAT3 tangent, binormal, normal;
-
-		index = i * 3;
-		// Calculate the tangent and binormal of that face.
-		CalculateTangentBinormalLH(vertices[indices[index + 0]], vertices[indices[index + 1]], vertices[indices[index + 2]], normal, tangent, binormal);
-
-		// Store the normal, tangent, and binormal for this face back in the model structure.
-	
-		vertices[indices[index + 0]].Tangent = tangent;
-		vertices[indices[index + 1]].Tangent = tangent;
-		vertices[indices[index + 2]].Tangent = tangent;
-
-		vertices[indices[index + 0]].BiTangent = binormal;
-		vertices[indices[index + 1]].BiTangent = binormal;
-		vertices[indices[index + 2]].BiTangent = binormal;
-
-	}
-
-}
 DrawableGameObject::DrawableGameObject()
 {
 	m_pVertexBuffer = nullptr;
@@ -177,7 +103,7 @@ HRESULT DrawableGameObject::initMesh(ID3D11Device* pd3dDevice, ID3D11DeviceConte
 		22,20,21,
 		23,20,22
 	};
-	CalculateModelVectors(vertices, indices);
+	//CalculateModelVectors(vertices, indices);
 
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;

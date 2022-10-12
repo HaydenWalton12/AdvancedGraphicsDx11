@@ -1,9 +1,6 @@
 #include "Home.h"
 
 
-DrawableGameObject		g_GameObject;
-
-
 
 
 void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int height)
@@ -49,8 +46,9 @@ HRESULT Home::InitScene(int width, int height)
     int g_viewHeight = 1280;
     _pCamera = new Camera(XMFLOAT4(0.0f, 2.0f, -4.0f, 0.0f), XMFLOAT4(0.0f, -0.05f, 0.05f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
     
-    g_GameObject.initMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-    g_GameObject.initialise_shader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"PixelShader.hlsl", L"VertexShader.hlsl");
+    _pObjectCube = new ObjectCube();
+    _pObjectCube->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _pObjectCube->InitialiseShader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"PixelShader.hlsl", L"VertexShader.hlsl");
 
     return S_OK;
     
@@ -73,7 +71,7 @@ void Home::Render()
 
 
     // Update the cube transform, material etc. 
-    g_GameObject.update(t, _pContext->GetDeviceContext().Get());
+    _pObjectCube->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
     UpdateConstantBuffer();
     Draw();
 
@@ -84,7 +82,7 @@ void Home::Render()
     ImGui::NewFrame();
     ImGui::Begin("Engine Simulations");
     _pCamera->ImGuiCameraSettings();
-    g_GameObject._shader->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _pObjectCube->_ObjectProperties->_pShader.get()->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
     if (ImGui::CollapsingHeader("Active Lighting Controls"))
     {
 
@@ -179,7 +177,7 @@ void Home::UpdateConstantBuffer()
 {
 
     // get the game object world transform
-    XMMATRIX mGO = XMLoadFloat4x4(g_GameObject.getTransform());
+    XMMATRIX mGO = XMLoadFloat4x4(&_pObjectCube->_ObjectProperties->_World);
 
     // store this and the view / projection in a constant buffer for the vertex shader to use
     ConstantBuffer cb1;
@@ -219,15 +217,15 @@ void Home::UpdateConstantBuffer()
 void Home::Draw()
 {
     // Render the cube
-    _pContext->GetDeviceContext()->VSSetShader(g_GameObject._shader->GetVertexShader().Get(), nullptr, 0);
+    _pContext->GetDeviceContext()->VSSetShader(_pObjectCube->_ObjectProperties->_pShader->GetVertexShader().Get(), nullptr, 0);
     _pContext->GetDeviceContext()->VSSetConstantBuffers(0, 1, _pDevice->GetConstantBuffer().GetAddressOf());
 
-    _pContext->GetDeviceContext()->PSSetShader(g_GameObject._shader->GetPixelShader().Get(), nullptr, 0);
+    _pContext->GetDeviceContext()->PSSetShader(_pObjectCube->_ObjectProperties->_pShader->GetPixelShader().Get(), nullptr, 0);
     _pContext->GetDeviceContext()->PSSetConstantBuffers(2, 1, _pDevice->GetLightConstantBuffer().GetAddressOf());
-    ID3D11Buffer* materialCB = g_GameObject.getMaterialConstantBuffer();
+    ID3D11Buffer* materialCB = _pObjectCube->_ObjectProperties->_pMaterialConstantBuffer.Get();
     _pContext->GetDeviceContext()->PSSetConstantBuffers(1, 1, &materialCB);
     UpdateConstantBuffer();
-    g_GameObject.draw(_pContext->GetDeviceContext().Get());
+    _pObjectCube->Draw( _pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
 }
 
 

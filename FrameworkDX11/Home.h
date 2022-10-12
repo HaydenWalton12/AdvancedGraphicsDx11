@@ -10,7 +10,9 @@
 #include "resource.h"
 #include <iostream>
 
-#include "DrawableGameObject.h"
+
+#include "Object.h"
+#include "ObjectCube.h"
 #include "structures.h"
 
 #include <vector>
@@ -45,7 +47,6 @@ public:
 	DIMOUSESTATE MouseLastState;
 	LPDIRECTINPUT8 DirectInput;
 
-	typedef vector<DrawableGameObject*> vecDrawables;
 	Camera* _pCamera;
 	HINSTANCE _Instance;
 
@@ -63,5 +64,7 @@ public:
 	void ClearRenderTarget();
 	void UpdateConstantBuffer();
 	void Draw();
+
+	ObjectCube* _pObjectCube;
 };
 
