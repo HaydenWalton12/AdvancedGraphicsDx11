@@ -137,6 +137,8 @@ struct LightingResult
     float4 Specular;
 };
 
+
+
 LightingResult DoPointLight(Light light, float3 vertexToEye, float4 vertexPos, float3 N)
 {
     LightingResult result;
@@ -201,51 +203,6 @@ float3 VectorToTangentSpace(float3 vectorV, float3x3 TBN_inv)
     float3 tangentSpaceNormal = normalize(mul(vectorV, TBN_inv));
     return tangentSpaceNormal;
 }
-//--------------------------------------------------------------------------------------
-// Vertex Shader
-//--------------------------------------------------------------------------------------
-PS_INPUT VS(VS_INPUT input)
-{
-
-	//VertexShader Cide
-    PS_INPUT output = (PS_INPUT) 0;
-	
-    output.Pos = mul(input.Pos, World);
-    output.worldPos = output.Pos;
-    float4 worldPos = output.Pos;
-    
-    output.Pos = mul(output.Pos, View);
-    output.Pos = mul(output.Pos, Projection);
-
-    output.Tex = input.Tex;
-
-
-
-    //Build TBN Matrix
-    output.Tan = normalize(mul(input.Tan, World).xyz);
-    output.Norm = normalize(mul(input.Norm, World).xyz);
-    output.Binorm = normalize(mul(input.Binorm, World).xyz);
-
-	//Build TBN Matrix
-    //ISSUE - Input is fine ,however we do not calculate the output from said values, calculations are correct but we need to output the values, similar to
-    //how we "output.norm"
-    //float3 T = normalize(mul(input.Tan, World));
-    //float3 B = normalize(mul(input.Binorm, World));
-    //float3 N = normalize(mul(input.Norm, World));
-
-    //float3x3 TBN = float3x3(T, B, N);
-    //float3x3 TBN_inv = transpose(TBN);
-	
-    //output.eyeVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
-	
-    //output.lightVectorTS = VectorToTangentSpace(vertexToLight.xyz, TBN_inv);
-	
-
-
-    
-    return output;
-}
-
 
 //--------------------------------------------------------------------------------------
 // Pixel Shader
@@ -268,14 +225,14 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float lightVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
     float3 viewDir = normalize(mul(tbn, EyePosition.xyz - IN.worldPos.xyz));
 
-    //float3 toEyeTS = VectorToTangentSpace(toEye, TBN_inv);
+    float3 toEyeTS = VectorToTangentSpace(vertexToEye, TBN_inv);
   
-     //float2 calculated_texCoords = ParallaxMapping(IN.Tex, toEyeTS);
+    float2 calculated_texCoords = ParallaxMapping(IN.Tex, toEyeTS);
     
    
     float3 bumpNormal = IN.Norm;
     float4 bumpMap;
-    bumpMap = txNormal.Sample(samLinear, IN.Tex);
+    bumpMap = txNormal.Sample(samLinear, calculated_texCoords);
 	
 	//Exampnd the range of the normal value from (0 , +1) to (-1 , +1)
     bumpMap = (bumpMap * 2.0f) - 1.0f;

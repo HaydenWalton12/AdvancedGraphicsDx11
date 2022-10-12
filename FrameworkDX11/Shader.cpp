@@ -88,6 +88,7 @@ void Shader::CreateVertexShader(ID3D11Device* device, ID3D11DeviceContext* devic
 	hr = device->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &_VertexShader);
 
 	if (FAILED(hr))
+
 	{
 		MessageBox(nullptr, L"The FX File Vertex Shader Cannot be Compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
 
