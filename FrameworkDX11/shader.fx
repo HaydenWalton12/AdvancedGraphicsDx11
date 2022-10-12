@@ -101,8 +101,6 @@ struct PS_INPUT
     float2 Tex : TEXCOORD0;
     float3 Tan : TANGENT;
     float3 Binorm : BINORMAL;
-
-
 };
 
 
@@ -161,11 +159,10 @@ LightingResult DoPointLight(Light light, float3 vertexToEye, float4 vertexPos, f
     return result;
 }
 
-LightingResult ComputeLighting(float4 vertexPos, float3 N)
+LightingResult ComputeLighting(float4 vertexPos, float3 N , float3 vertextoeyets)
 {
-    float3 vertexToEye = normalize(EyePosition - vertexPos).xyz;
-    //float3 vertexToEye = EyePosition - IN.worldPos.xyz;
-    //float3 vertexToLight = Lights[0].Position - IN.worldPos.xyz;
+    float3 vertexToEye = normalize(vertextoeyets - vertexPos).xyz;
+
     LightingResult totalResult = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
 
 	[unroll]
@@ -197,9 +194,9 @@ float2 ParallaxMapping(float2 tex_coords, float3 viewing_direction)
     return tex_coords - p;
 }
 
+//Helper Function to convert world normal into tangent space
 float3 VectorToTangentSpace(float3 vectorV, float3x3 TBN_inv)
 {
-	
 	//Transform From Tangent space to world space
     float3 tangentSpaceNormal = normalize(mul(vectorV, TBN_inv));
     return tangentSpaceNormal;
@@ -223,11 +220,11 @@ PS_INPUT VS(VS_INPUT input)
     output.Tex = input.Tex;
 
 
-	
-    output.Norm = mul(float4(input.Norm, 0), World).xyz;
-    
-    output.Binorm = normalize(mul(input.Binorm, World).xyz);
+
+    //Build TBN Matrix
     output.Tan = normalize(mul(input.Tan, World).xyz);
+    output.Norm = normalize(mul(input.Norm, World).xyz);
+    output.Binorm = normalize(mul(input.Binorm, World).xyz);
 
 	//Build TBN Matrix
     //ISSUE - Input is fine ,however we do not calculate the output from said values, calculations are correct but we need to output the values, similar to
@@ -257,17 +254,23 @@ PS_INPUT VS(VS_INPUT input)
 float4 PS(PS_INPUT IN) : SV_TARGET
 {
     float shadowFactor = 1;
+
+    //Rebuilds TBN matrix from calculated vertex shader
     float3x3 tbn = float3x3(IN.Tan, IN.Binorm, IN.Norm);
     
-    float3x3 TBN_inv = transpose(tbn);
+    float3 vertexToEye = EyePosition - IN.worldPos.xyz;
+    float3 vertexToLight = Lights[0].Position - IN.worldPos.xyz;
     
-    //Eye Position is needed
-    float3 toEye = EyePosW;
-  
+    //Creates Inverse TBN
+    float3x3 TBN_inv = transpose(tbn);
+
+    float eyeVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
+    float lightVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
     float3 viewDir = normalize(mul(tbn, EyePosition.xyz - IN.worldPos.xyz));
-    float3 toEyeTS = VectorToTangentSpace(toEye, TBN_inv);
+
+    //float3 toEyeTS = VectorToTangentSpace(toEye, TBN_inv);
   
-     float2 calculated_texCoords = ParallaxMapping(IN.Tex, toEyeTS);
+     //float2 calculated_texCoords = ParallaxMapping(IN.Tex, toEyeTS);
     
    
     float3 bumpNormal = IN.Norm;
@@ -279,7 +282,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     bumpNormal = normalize(mul(bumpMap.xyz, tbn));
 
     LightingResult
-    lit = ComputeLighting(IN.worldPos, bumpNormal);
+    lit = ComputeLighting(eyeVectorTS, bumpNormal, lightVectorTS);
 
     //Issue With this is that all lighting appears upon the surface of the normal map
     //lit = ComputeLighting(IN.worldPos, bumpMap);
