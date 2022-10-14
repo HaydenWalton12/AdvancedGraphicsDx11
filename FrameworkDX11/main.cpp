@@ -57,11 +57,31 @@ ID3D11Buffer*           g_pLightConstantBuffer = nullptr;
 Camera* g_Camera = nullptr;
 
 
+IDirectInputDevice8* DIKeyBoard;
+IDirectInputDevice8* DIMouse;
+
+DIMOUSESTATE mouseLastState;
+LPDIRECTINPUT8 DirectInput;
+
 int						g_viewWidth;
 int						g_viewHeight;
 
 DrawableGameObject		g_GameObject;
 
+bool InitDirectInput(HINSTANCE hInstance)
+{
+    DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&DirectInput, NULL);
+
+    DirectInput->CreateDevice(GUID_SysKeyboard, &DIKeyBoard, NULL);
+
+    DirectInput->CreateDevice(GUID_SysMouse, &DIMouse, NULL);
+
+    DIKeyBoard->SetDataFormat(&c_dfDIKeyboard);
+    DIKeyBoard->SetCooperativeLevel(NULL, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
+    DIMouse->SetDataFormat(&c_dfDIMouse);
+    DIMouse->SetCooperativeLevel(NULL, DISCL_EXCLUSIVE | DISCL_NOWINKEY | DISCL_FOREGROUND);
+    return true;
+}
 
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -100,7 +120,69 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
     return ( int )msg.wParam;
 }
+void DetectInput()
+{
 
+   float xpos =  g_GameObject.Getposition().x;
+   float ypos = g_GameObject.Getposition().y;
+   float zpos = g_GameObject.Getposition().z;
+
+
+    DIMOUSESTATE mouseCurrState;
+
+    BYTE keyboardState[256];
+
+    DIKeyBoard->Acquire();
+    DIMouse->Acquire();
+
+    DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseCurrState);
+
+    DIKeyBoard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
+
+    //Forward
+    if (keyboardState[DIK_W] & 0x80)
+    {
+        zpos += 0.001 / 1000;
+    }
+
+    //Backwards
+    if (keyboardState[DIK_S] & 0x80)
+    {
+        zpos += 0.001 / 1000;
+    }
+
+    //Right
+    if (keyboardState[DIK_D] & 0x80)
+    {
+        xpos -= 0.001 / 1000 ;
+    }
+
+    //Left
+    if (keyboardState[DIK_A] & 0x80)
+    {
+        xpos += 0.001 / 1000;
+    }
+
+    //Up
+    if (keyboardState[DIK_SPACE] & 0x80)
+    {
+        ypos += 0.001 / 1000;
+    }
+
+    //Down
+    if (keyboardState[DIK_LSHIFT] & 0x80)
+    {
+        ypos -= 0.001 / 1000;
+    }
+
+
+  
+
+    //Update 
+    g_GameObject.setPosition(XMFLOAT3(xpos , ypos , zpos));
+
+
+}
 
 //--------------------------------------------------------------------------------------
 // Register class and create window
@@ -140,7 +222,7 @@ HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
         return E_FAIL;
 
     ShowWindow( g_hWnd, nCmdShow );
-
+    InitDirectInput(hInstance);
 
 
     return S_OK;
@@ -645,7 +727,7 @@ void Render()
 {
 
 
-
+    DetectInput();
 
     float t = calculateDeltaTime(); // capped at 60 fps
     if (t == 0.0f)

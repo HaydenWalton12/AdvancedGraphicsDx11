@@ -41,6 +41,10 @@ public:
 	ID3D11SamplerState**				getTextureSamplerState() { return &m_pSamplerLinear; }
 	ID3D11Buffer*						getMaterialConstantBuffer() { return m_pMaterialConstantBuffer;}
 	void								setPosition(XMFLOAT3 position);
+	XMFLOAT3 Getposition()
+	{
+		return m_position;
+	}
 	//Unique Pointer
 	//Smart Pointer derivative , manages annother object through a pointer , when the object is out of scope , pointer is automatically disposed
 	std::unique_ptr<Shader> _shader;

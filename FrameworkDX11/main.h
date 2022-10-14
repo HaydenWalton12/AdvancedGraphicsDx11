@@ -21,6 +21,11 @@
 #include "imgui_internal.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
+
+#pragma comment (lib, "dinput8.lib")
+#pragma comment (lib, "dxguid.lib")
+#include <dinput.h>
+
 using namespace std;
 
 
@@ -34,4 +39,8 @@ public:
 
 	Camera* _Camera;
 	typedef vector<DrawableGameObject*> vecDrawables;
+
+
+
+
 };
