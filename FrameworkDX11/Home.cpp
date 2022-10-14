@@ -244,7 +244,7 @@ void Home::UpdateConstantBuffer()
     _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);
    
     //I Store Lighting values in constant buffer function since we pass the light property values to the constant buffer, we can change this eventual;ly
-    
+
     _Lighting.Enabled = static_cast<int>(true);
     _Lighting.LightType = SpotLight;
     _Lighting.Color = XMFLOAT4(Colors::White);
@@ -262,10 +262,11 @@ void Home::UpdateConstantBuffer()
     XMStoreFloat4(&_Lighting.Direction, LightDirection);
 
 
-    
+
 
     _Lighting_Properties.Lights[0] = _Lighting;
     _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetLightConstantBuffer().Get(), 0, nullptr, &_Lighting_Properties, 0, 0);
+
 
 
 }

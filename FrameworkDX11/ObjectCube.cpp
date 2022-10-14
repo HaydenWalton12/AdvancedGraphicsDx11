@@ -134,7 +134,7 @@ HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 		22,20,21,
 		23,20,22
 	};
-	//CalculateModelVectors(vertices, indices);
+	CalculateModelVectors(vertices, indices);
 
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;
