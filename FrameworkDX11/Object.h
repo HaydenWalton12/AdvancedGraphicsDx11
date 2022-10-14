@@ -66,18 +66,10 @@ public:
 	virtual HRESULT InitMesh(ID3D11Device* device, ID3D11DeviceContext* context);
 	virtual void InitialiseShader(ID3D11Device* device, ID3D11DeviceContext* device_context, const wchar_t* pixel_shader_path, const wchar_t* vertex_shader_path);
 	
-	virtual void Draw(ID3D11Device* device, ID3D11DeviceContext* device_context);
+	virtual void Draw(Device* device, ID3D11DeviceContext* device_context);
 	virtual void Update(ID3D11Device* device, ID3D11DeviceContext* device_context);
 	
 	ObjectProperties* _ObjectProperties;
-
-private:
-
-
-
-
-
-protected:
 
 
 

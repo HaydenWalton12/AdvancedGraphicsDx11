@@ -90,13 +90,21 @@ void Home::Render()
         ImGui::DragFloat("Y", &_Lighting.Position.y, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Z", &_Lighting.Position.z, 0.1f, -20.0f, 20.0f);
 
-        //ImGui::DragFloat3("LookAt", &_At.x, 0.015f);
-        //ImGui::DragFloat3("Up", &_Up.x, 0.005f);
-        //ImGui::SliderAngle("FOV", &_FOV, 5.0f, 160.0f);
-        //ImGui::DragFloat("Near Plane", &_NearZ, 0.01f, 0.1f, 100.0f);
-        //ImGui::DragFloat("Far Plane", &_FarZ, 0.1f, 0.2f, 5000.0f);
+   
 
     }
+
+    if (ImGui::CollapsingHeader("Active Cube Controls"))
+    {
+
+        ImGui::DragFloat("X", &_pObjectCube->_ObjectProperties->_Transformation.Translation.x, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Y", &_pObjectCube->_ObjectProperties->_Transformation.Translation.y, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Z", &_pObjectCube->_ObjectProperties->_Transformation.Translation.z, 0.1f, -20.0f, 20.0f);
+
+  
+    }
+    _pObjectCube->_ObjectProperties->SetTranslation(XMFLOAT3(_pObjectCube->_ObjectProperties->_Transformation.Translation.x, _pObjectCube->_ObjectProperties->_Transformation.Translation.y, _pObjectCube->_ObjectProperties->_Transformation.Translation.z));
+    _pObjectCube->_ObjectProperties->_Transformation.UpdateObject();
     ImGui::End();
     //Render IMGUI
     ImGui::Render();
@@ -216,16 +224,9 @@ void Home::UpdateConstantBuffer()
 }
 void Home::Draw()
 {
-    // Render the cube
-    _pContext->GetDeviceContext()->VSSetShader(_pObjectCube->_ObjectProperties->_pShader->GetVertexShader().Get(), nullptr, 0);
-    _pContext->GetDeviceContext()->VSSetConstantBuffers(0, 1, _pDevice->GetConstantBuffer().GetAddressOf());
 
-    _pContext->GetDeviceContext()->PSSetShader(_pObjectCube->_ObjectProperties->_pShader->GetPixelShader().Get(), nullptr, 0);
-    _pContext->GetDeviceContext()->PSSetConstantBuffers(2, 1, _pDevice->GetLightConstantBuffer().GetAddressOf());
-    ID3D11Buffer* materialCB = _pObjectCube->_ObjectProperties->_pMaterialConstantBuffer.Get();
-    _pContext->GetDeviceContext()->PSSetConstantBuffers(1, 1, &materialCB);
     UpdateConstantBuffer();
-    _pObjectCube->Draw( _pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _pObjectCube->Draw( _pDevice, _pContext->GetDeviceContext().Get());
 }
 
 

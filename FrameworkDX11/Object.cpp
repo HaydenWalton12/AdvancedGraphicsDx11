@@ -9,9 +9,9 @@ void Object::InitialiseShader(ID3D11Device* device, ID3D11DeviceContext* device_
 {
 }
 
-void Object::Draw(ID3D11Device* device, ID3D11DeviceContext* device_context)
-{
 
+void Object::Draw(Device* device, ID3D11DeviceContext* device_context)
+{
 }
 
 void Object::Update(ID3D11Device* device, ID3D11DeviceContext* device_context)

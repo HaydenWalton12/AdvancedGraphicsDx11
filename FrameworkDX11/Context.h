@@ -15,6 +15,7 @@ class Context
 public:
 	Context(HWND hwnd, int width, int height) : _Hwnd(hwnd), _viewWidth(width), _viewHeight(height)
 	{
+
 	}
 
 	 Microsoft::WRL::ComPtr<ID3D11DeviceContext1> _pDeviceContext1;
@@ -45,10 +46,11 @@ public:
 
 	Device* _pDevice;
 	HRESULT SetSwapChain(Microsoft::WRL::ComPtr<ID3D11Device> device);
+
 	void SetViewport(int width, int height);
 	void SetRenderTargetView(ID3D11RenderTargetView* render_target , ID3D11DepthStencilView* depth_view);
 
-	int						_viewWidth;
+	int	 _viewWidth;
 	int	_viewHeight;
 
 };

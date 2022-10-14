@@ -223,8 +223,18 @@ void ObjectCube::InitialiseShader(ID3D11Device* device, ID3D11DeviceContext* dev
 	}
 }
 
-void ObjectCube::Draw(ID3D11Device* device, ID3D11DeviceContext* device_context)
+void ObjectCube::Draw(Device* device, ID3D11DeviceContext* device_context)
 {
+	device_context->VSSetShader(_ObjectProperties->_pShader.get()->GetVertexShader().Get(), nullptr, 0);
+	device_context->VSSetConstantBuffers(0 , 1 , device->GetConstantBuffer().GetAddressOf());
+
+
+	device_context->PSSetShader(_ObjectProperties->_pShader->GetPixelShader().Get(), nullptr, 0);
+	device_context->PSSetConstantBuffers(2, 1, device->GetLightConstantBuffer().GetAddressOf());
+	
+	ID3D11Buffer* materialCB = _ObjectProperties->_pMaterialConstantBuffer.Get();
+	device_context->PSSetConstantBuffers(1, 1, &materialCB);
+
 	device_context->PSSetShaderResources(0, 1, _ObjectProperties->_pTextureResourceView.GetAddressOf());
 	device_context->PSSetShaderResources(1, 1, _ObjectProperties->_pNormalResourceView.GetAddressOf());
 	device_context->PSSetShaderResources(2, 1, _ObjectProperties->_pParallaxResourceView.GetAddressOf());
@@ -239,8 +249,8 @@ void ObjectCube::Update(ID3D11Device* device, ID3D11DeviceContext* device_contex
 
 	// Cube:  Rotate around origin
 	XMMATRIX mScale = XMMatrixScaling(2.0f, 2.0f, 2.0f);
-	XMMATRIX mTranslate = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-	XMMATRIX world = mTranslate * mScale;
+	XMMATRIX mTranslate = XMMatrixTranslation(_ObjectProperties->_Transformation.GetTranslate().x , _ObjectProperties->_Transformation.GetTranslate().y , _ObjectProperties->_Transformation.GetTranslate().z);
+	XMMATRIX world = mTranslate;
 	XMStoreFloat4x4(&_ObjectProperties->_World, world);
 
 	device_context->UpdateSubresource(_ObjectProperties->_pMaterialConstantBuffer.Get(), 0, nullptr, &_ObjectProperties->_Material, 0, 0);
