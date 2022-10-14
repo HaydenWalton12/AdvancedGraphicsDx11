@@ -1,4 +1,10 @@
 #pragma once
+
+#pragma comment (lib, "dinput8.lib")
+#pragma comment (lib, "dxguid.lib")
+#include <dinput.h>
+
+
 #include <windows.h>
 #include <windowsx.h>
 #include <d3d11_1.h>
@@ -22,11 +28,6 @@
 
 #include "Device.h"
 #include "Context.h"
-
-#include <dinput.h>
-
-#pragma comment (lib, "dinput8.lib")
-#pragma comment (lib, "dxguid.lib")
 
 
 //Centre Of Entire FrameWork that will collate all elements together to create functional system
@@ -65,6 +66,12 @@ public:
 	void UpdateConstantBuffer();
 	void Draw();
 
+
+	void DetectInput()
+	{
+
+
+	}
 	ObjectCube* _pObjectCube;
 };
 

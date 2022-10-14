@@ -183,41 +183,70 @@ float2 ParallaxMapping(float2 tex_coords, float3 viewing_direction)
     float2 p = viewing_direction.xy / viewing_direction.z * (height * height_scale);
     return tex_coords - p;
 }
+
+LightingResult ComputeLightingAlt(float4 vertexPos, float3 N)
+{
+    float3 vertexToEye = normalize(EyePosition - vertexPos).xyz;
+
+    LightingResult totalResult = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
+
+	[unroll]
+    for (int i = 0; i < MAX_LIGHTS; ++i)
+    {
+        LightingResult result = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
+
+        if (!Lights[i].Enabled) 
+            continue;
+		
+        result = DoPointLight(Lights[i], vertexToEye, vertexPos, N);
+		
+        totalResult.Diffuse += result.Diffuse;
+        totalResult.Specular += result.Specular;
+    }
+
+    totalResult.Diffuse = saturate(totalResult.Diffuse);
+    totalResult.Specular = saturate(totalResult.Specular);
+
+    return totalResult;
+}
+
+
 //--------------------------------------------------------------------------------------
 // Pixel Shader
 //--------------------------------------------------------------------------------------
 
 float4 PS(PS_INPUT IN) : SV_TARGET
 {
-    float shadowFactor = 1;
+    //float shadowFactor = 1;
 
-    //Rebuilds TBN matrix from calculated vertex shader
-    float3x3 tbn = float3x3(IN.Tan, IN.Binorm, IN.Norm);
+    ////Rebuilds TBN matrix from calculated vertex shader
+    //float3x3 tbn = float3x3(IN.Tan, IN.Binorm, IN.Norm);
     
-    float3 vertexToEye = EyePosition - IN.worldPos.xyz;
-    float3 vertexToLight = Lights[0].Position - IN.worldPos.xyz;
+    //float3 vertexToEye = EyePosition - IN.worldPos.xyz;
+    //float3 vertexToLight = Lights[0].Position - IN.worldPos.xyz;
     
-    //Creates Inverse TBN
-    float3x3 TBN_inv = transpose(tbn);
+    ////Creates Inverse TBN
+    //float3x3 TBN_inv = transpose(tbn);
     
-    float3 eyeVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
-    float3 lightVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
+    //float3 eyeVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
+    //float3 lightVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
 
-    float3 toEyeTS = VectorToTangentSpace(vertexToEye, TBN_inv);
+    //float3 toEyeTS = VectorToTangentSpace(vertexToEye, TBN_inv);
   
     
-    float2 calculated_texCoords = ParallaxMapping(IN.Tex, toEyeTS);
+    //float2 calculated_texCoords = ParallaxMapping(IN.Tex, toEyeTS);
     
    
-    float3 bumpNormal = IN.Norm;
-    float4 bumpMap;
-    bumpMap = txNormal.Sample(samLinear, calculated_texCoords);
+    //float3 bumpNormal = IN.Norm;
+    //float4 bumpMap;
+    //bumpMap = txNormal.Sample(samLinear, calculated_texCoords);
 	
 	//Exampnd the range of the normal value from (0 , +1) to (-1 , +1)
-    bumpMap = (bumpMap * 2.0f) - 1.0f;
-    bumpNormal = normalize(mul(bumpMap.xyz, tbn));
+    //bumpMap = (bumpMap * 2.0f) - 1.0f;
+    //bumpNormal = normalize(mul(bumpMap.xyz, tbn));
 
-    LightingResult lit = ComputeLighting(eyeVectorTS, bumpNormal, lightVectorTS);
+    //LightingResult lit = ComputeLighting(eyeVectorTS, bumpNormal, lightVectorTS);
+    LightingResult lit = ComputeLightingAlt(IN.worldPos, normalize(IN.Norm));
 
     //Issue With this is that all lighting appears upon the surface of the normal map
     //lit = ComputeLighting(IN.worldPos, bumpMap);

@@ -21,7 +21,6 @@ struct ObjectProperties
 	Transformation _Transformation;
 	MaterialPropertiesConstantBuffer	_Material;
 
-	XMFLOAT4X4							_World;
 
 
 	Microsoft::WRL::ComPtr <ID3D11Buffer> _pVertexBuffer;

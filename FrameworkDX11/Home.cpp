@@ -41,6 +41,7 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
 //--------------------------------------------------------------------------------------
 HRESULT Home::InitScene(int width, int height)
 {
+    HRESULT Hr;
         //Initialise Camera
     int g_viewWidth = 720;
     int g_viewHeight = 1280;
@@ -59,10 +60,9 @@ void Home::Render()
 {
     //Im GUI Draw Order , Must Be after dx11 draw order
 
-    ClearRenderTarget();
-
-
     Input(_Instance);
+
+    ClearRenderTarget();
 
 
     float t = CalculateDeltaTime(); // capped at 60 fps
@@ -70,9 +70,10 @@ void Home::Render()
         return;
 
 
+    UpdateConstantBuffer();
     // Update the cube transform, material etc. 
     _pObjectCube->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-    UpdateConstantBuffer();
+
     Draw();
 
 
@@ -80,6 +81,7 @@ void Home::Render()
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
+
     ImGui::Begin("Engine Simulations");
     _pCamera->ImGuiCameraSettings();
     _pObjectCube->_ObjectProperties->_pShader.get()->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
@@ -103,8 +105,6 @@ void Home::Render()
 
   
     }
-    _pObjectCube->_ObjectProperties->SetTranslation(XMFLOAT3(_pObjectCube->_ObjectProperties->_Transformation.Translation.x, _pObjectCube->_ObjectProperties->_Transformation.Translation.y, _pObjectCube->_ObjectProperties->_Transformation.Translation.z));
-    _pObjectCube->_ObjectProperties->_Transformation.UpdateObject();
     ImGui::End();
     //Render IMGUI
     ImGui::Render();
@@ -154,6 +154,53 @@ void Home::Input(HINSTANCE instance)
 
     DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseCurrState);
     DIKeyBoard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
+
+    float xpos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().x;
+    float ypos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().y;
+    float zpos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().z;
+
+    //Forward
+    if (keyboardState[DIK_W] & 0x80)
+    {
+        zpos += 0.001 / 1000;
+    }
+
+    //Backwards
+    if (keyboardState[DIK_S] & 0x80)
+    {
+        zpos -= 0.001 / 1000;
+    }
+
+    //Right
+    if (keyboardState[DIK_D] & 0x80)
+    {
+        xpos -= 0.001 / 1000;
+    }
+
+    //Left
+    if (keyboardState[DIK_A] & 0x80)
+    {
+        xpos += 0.001 / 1000;
+    }
+
+    //Up
+    if (keyboardState[DIK_SPACE] & 0x80)
+    {
+        ypos += 0.001 / 1000;
+    }
+
+    //Down
+    if (keyboardState[DIK_LSHIFT] & 0x80)
+    {
+        ypos -= 0.001 / 1000;
+    }
+
+
+
+
+    //Update 
+    _pObjectCube->_ObjectProperties->_Transformation.SetTranslation(XMFLOAT3(xpos, ypos, zpos));
+
 }
 
 
@@ -185,7 +232,7 @@ void Home::UpdateConstantBuffer()
 {
 
     // get the game object world transform
-    XMMATRIX mGO = XMLoadFloat4x4(&_pObjectCube->_ObjectProperties->_World);
+    XMMATRIX mGO = XMLoadFloat4x4(&_pObjectCube->World);
 
     // store this and the view / projection in a constant buffer for the vertex shader to use
     ConstantBuffer cb1;
@@ -225,7 +272,6 @@ void Home::UpdateConstantBuffer()
 void Home::Draw()
 {
 
-    UpdateConstantBuffer();
     _pObjectCube->Draw( _pDevice, _pContext->GetDeviceContext().Get());
 }
 

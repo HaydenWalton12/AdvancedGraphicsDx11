@@ -98,6 +98,7 @@ void Device::CreateDepth()
     descDepth.SampleDesc.Count = 1;
     descDepth.SampleDesc.Quality = 0;
     descDepth.Usage = D3D11_USAGE_DEFAULT;
+
     descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
     descDepth.CPUAccessFlags = 0;
     descDepth.MiscFlags = 0;
@@ -114,6 +115,7 @@ void Device::CreateDepth()
 
 
 }
+
 
 
 

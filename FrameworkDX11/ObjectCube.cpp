@@ -82,6 +82,7 @@ HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 	// Create vertex buffer
 	std::vector<SimpleVertex> vertices =
 	{
+
 		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
 		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
 		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
@@ -133,7 +134,7 @@ HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 		22,20,21,
 		23,20,22
 	};
-	CalculateModelVectors(vertices, indices);
+//	CalculateModelVectors(vertices, indices);
 
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;
@@ -190,6 +191,7 @@ HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
 	hr = device->CreateSamplerState(&sampDesc, _ObjectProperties->_pSamplerState.GetAddressOf());
 
 	_ObjectProperties->_Material.Material.Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -247,11 +249,10 @@ void ObjectCube::Update(ID3D11Device* device, ID3D11DeviceContext* device_contex
 {
 
 
-	// Cube:  Rotate around origin
-	XMMATRIX mScale = XMMatrixScaling(2.0f, 2.0f, 2.0f);
-	XMMATRIX mTranslate = XMMatrixTranslation(_ObjectProperties->_Transformation.GetTranslate().x , _ObjectProperties->_Transformation.GetTranslate().y , _ObjectProperties->_Transformation.GetTranslate().z);
+	XMMATRIX mTranslate = XMMatrixTranslation(_ObjectProperties->_Transformation.GetTranslate().x, _ObjectProperties->_Transformation.GetTranslate().y, _ObjectProperties->_Transformation.GetTranslate().z);
 	XMMATRIX world = mTranslate;
-	XMStoreFloat4x4(&_ObjectProperties->_World, world);
+	XMStoreFloat4x4(&World, world);
+
 
 	device_context->UpdateSubresource(_ObjectProperties->_pMaterialConstantBuffer.Get(), 0, nullptr, &_ObjectProperties->_Material, 0, 0);
 }
