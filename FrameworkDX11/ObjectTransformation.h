@@ -70,7 +70,6 @@ struct Transformation
 	void SetTranslation(XMFLOAT3 translation)
 	{
 
-		_Translation = XMMatrixTranslation(translation.x, translation.y, translation.z);
 		Translation = translation;
 
 	}

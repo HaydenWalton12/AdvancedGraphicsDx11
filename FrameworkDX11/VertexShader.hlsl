@@ -45,24 +45,20 @@ PS_INPUT VS(VS_INPUT input)
     PS_INPUT output = (PS_INPUT) 0;
 	
     output.Pos = mul(input.Pos, World);
+    output.worldPos = output.Pos;
+    float4 worldPos = output.Pos;
+    
     output.Pos = mul(output.Pos, View);
     output.Pos = mul(output.Pos, Projection);
-    
-    output.worldPos = output.Pos;
-
-    
-    output.Norm = mul(float4(input.Norm, 0), World).xyz;
-
-
 
     output.Tex = input.Tex;
 
 
 
     //Build TBN Matrix
-    //output.Tan = normalize(mul(input.Tan, World).xyz);
-    //output.Norm = normalize(mul(input.Norm, World).xyz);
-    //output.Binorm = normalize(mul(input.Binorm, World).xyz);
+    output.Tan = normalize(mul(input.Tan, World).xyz);
+    output.Norm = normalize(mul(input.Norm, World).xyz);
+    output.Binorm = normalize(mul(input.Binorm, World).xyz);
 
 	//Build TBN Matrix
     
@@ -79,4 +75,3 @@ PS_INPUT VS(VS_INPUT input)
     //output.lightVectorTS = VectorToTangentSpace(vertexToLight.xyz, TBN_inv);
     return output;
 }
-

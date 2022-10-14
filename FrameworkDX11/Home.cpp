@@ -70,10 +70,10 @@ void Home::Render()
         return;
 
 
-    UpdateConstantBuffer();
+
     // Update the cube transform, material etc. 
     _pObjectCube->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-
+    UpdateConstantBuffer();
     Draw();
 
 
@@ -236,7 +236,7 @@ void Home::UpdateConstantBuffer()
 
     // store this and the view / projection in a constant buffer for the vertex shader to use
     ConstantBuffer cb1;
-    cb1.mWorld = (mGO);
+    cb1.mWorld = XMMatrixTranspose(mGO);
     cb1.mView = XMMatrixTranspose(_pCamera->CalculateViewMatrix());
     cb1.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
     cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
