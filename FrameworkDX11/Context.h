@@ -48,7 +48,7 @@ public:
 	HRESULT SetSwapChain(Microsoft::WRL::ComPtr<ID3D11Device> device);
 
 	void SetViewport(int width, int height);
-	void SetRenderTargetView(ID3D11RenderTargetView* render_target , ID3D11DepthStencilView* depth_view);
+	void SetRenderTargetView(ID3D11RenderTargetView* render_target[], ID3D11DepthStencilView* depth_view, int num_views);
 
 	int	 _viewWidth;
 	int	_viewHeight;

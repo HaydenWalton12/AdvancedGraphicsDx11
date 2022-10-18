@@ -40,8 +40,11 @@ public:
 	    Microsoft::WRL::ComPtr<ID3D11Device> _pd3dDevice;
 	    Microsoft::WRL::ComPtr<ID3D11Device> GetDevice() { return _pd3dDevice; }
 
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> _pRTTRenderTargetView;
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView>GetRTTRenderTargetView() { return  _pRTTRenderTargetView; }
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> _pRTTRenderTargetTexture;
+		Microsoft::WRL::ComPtr<ID3D11Texture2D>GetRTTTagetTexture() { return _pRTTRenderTargetTexture; }
 
-	
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> _pRenderTargetView;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView>GetRenderTargetView() { return  _pRenderTargetView; }
 
@@ -51,7 +54,7 @@ public:
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilView>GetDepthStencilView() { return _pDepthStencilView; }
 		Microsoft::WRL::ComPtr<ID3D11Texture2D>GetDepthStencil() { return _pDepthStencil; }
 
-
+		ID3D11BlendState* _pBlendState;
 
 		Microsoft::WRL::ComPtr<ID3D11Buffer> _pConstantBuffer;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> _pLightConstantBuffer;
@@ -60,8 +63,14 @@ public:
 		Microsoft::WRL::ComPtr<ID3D11Buffer>GetLightConstantBuffer() { return _pLightConstantBuffer; }
 
 	void CreateDepth();
+	
+	void CreatePost();
 	HRESULT CreateDevice(Context* c_context, Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context, Microsoft::WRL::ComPtr<IDXGIFactory1> device_factory);
-	void CreateRenderTargetView(Microsoft::WRL::ComPtr<IDXGISwapChain> swap_chain);
+
+   void CreateRenderTargetView( Microsoft::WRL::ComPtr<IDXGISwapChain> swap_chain, ID3D11Texture2D* texture);
+	
+
+	void CreateRTTRenderTargetView(Microsoft::WRL::ComPtr<IDXGISwapChain> swap_chain, ID3D11Texture2D* texture);
 
 	HRESULT CreateConstantBuffer();
 

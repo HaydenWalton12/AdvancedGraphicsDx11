@@ -63,7 +63,7 @@ public:
 	float CalculateDeltaTime();
 	void Input(HINSTANCE instance);
 	void InitDirectInput(HINSTANCE instance);
-	void ClearRenderTarget();
+	void ClearRenderTarget(ID3D11RenderTargetView* render_target);
 	void UpdateConstantBuffer();
 	void Draw();
 

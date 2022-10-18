@@ -13,9 +13,10 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
     _pDevice->CreateDevice(_pContext , _pContext->GetDeviceContext().Get() , _pContext->GetFactory1().Get());
     _pContext->SetViewport(1280, 720);
     _pContext->SetSwapChain(_pDevice->GetDevice().Get());
-    _pDevice->CreateRenderTargetView(_pContext->GetSwapChain().Get());
+    _pDevice->CreatePost();
+    _pDevice->CreateRTTRenderTargetView( _pContext->GetSwapChain().Get() , _pDevice->GetRTTTagetTexture().Get());
+    _pDevice->CreateRenderTargetView( _pContext->GetSwapChain().Get() , nullptr);
 
-    _pContext->SetRenderTargetView(_pDevice->GetRenderTargetView().Get(), _pDevice->GetDepthStencilView().Get());
     _pDevice->CreateConstantBuffer();
     //Setup ImGui
     IMGUI_CHECKVERSION();
@@ -47,9 +48,9 @@ HRESULT Home::InitScene(int width, int height)
     int g_viewHeight = 1280;
     _pCamera = new Camera(XMFLOAT4(0.0f, 2.0f, -4.0f, 0.0f), XMFLOAT4(0.0f, -0.05f, 0.05f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
     //
-    //_pObjectCube = new ObjectCube();
-    //_pObjectCube->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-    //_pObjectCube->InitialiseShader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"PixelShader.hlsl", L"VertexShader.hlsl");
+    _pObjectCube = new ObjectCube();
+    _pObjectCube->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _pObjectCube->InitialiseShader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"PixelShader.hlsl", L"VertexShader.hlsl");
 
     _pObjectQuad = new ObjectQuad();
     _pObjectQuad->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
@@ -65,8 +66,13 @@ void Home::Render()
     //Im GUI Draw Order , Must Be after dx11 draw order
 
     Input(_Instance);
+    ID3D11RenderTargetView* target_views[2];
+    target_views[0] = _pDevice->GetRenderTargetView().Get();
+    target_views[1] = _pDevice->GetRTTRenderTargetView().Get();
 
-    ClearRenderTarget();
+    ClearRenderTarget(_pDevice->GetRenderTargetView().Get());
+    //_pContext->SetRenderTargetView(&target_views[1], _pDevice->GetDepthStencilView().Get(), 1);
+    _pContext->_pDeviceContext.Get()->OMSetRenderTargets(1, &target_views[0], _pDevice->GetDepthStencilView().Get());
 
 
     float t = CalculateDeltaTime(); // capped at 60 fps
@@ -76,9 +82,8 @@ void Home::Render()
 
 
     // Update the cube transform, material etc. 
-    //_pObjectCube->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-    _pObjectQuad->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-    UpdateConstantBuffer();
+    _pObjectCube->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+
     Draw();
 
 
@@ -89,7 +94,7 @@ void Home::Render()
 
     ImGui::Begin("Engine Simulations");
     _pCamera->ImGuiCameraSettings();
-  //  _pObjectCube->_ObjectProperties->_pShader.get()->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _pObjectCube->_ObjectProperties->_pShader.get()->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
     if (ImGui::CollapsingHeader("Active Lighting Controls"))
     {
 
@@ -101,7 +106,7 @@ void Home::Render()
 
     }
 
-    /*f (ImGui::CollapsingHeader("Active Cube Controls"))
+     if (ImGui::CollapsingHeader("Active Cube Controls"))
     {
 
         ImGui::DragFloat("X", &_pObjectCube->_ObjectProperties->_Transformation.Translation.x, 0.1f, -20.0f, 20.0f);
@@ -109,16 +114,20 @@ void Home::Render()
         ImGui::DragFloat("Z", &_pObjectCube->_ObjectProperties->_Transformation.Translation.z, 0.1f, -20.0f, 20.0f);
 
   
-    }*/
+    }
     ImGui::End();
     //Render IMGUI
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    
+
+    _pContext->_pDeviceContext.Get()->OMSetRenderTargets(1, &target_views[1], _pDevice->GetDepthStencilView().Get());
 
 
 
     // Present our back buffer to our front buffer
     _pContext->GetSwapChain()->Present(0, 0);
+
 }
 
 
@@ -160,51 +169,51 @@ void Home::Input(HINSTANCE instance)
     DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseCurrState);
     DIKeyBoard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
 
-    //float xpos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().x;
-    //float ypos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().y;
-    //float zpos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().z;
+    float xpos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().x;
+    float ypos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().y;
+    float zpos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().z;
 
-    ////Forward
-    //if (keyboardState[DIK_W] & 0x80)
-    //{
-    //    zpos += 0.001 / 1000;
-    //}
+    //Forward
+    if (keyboardState[DIK_W] & 0x80)
+    {
+        zpos += 0.001 / 1000;
+    }
 
-    ////Backwards
-    //if (keyboardState[DIK_S] & 0x80)
-    //{
-    //    zpos -= 0.001 / 1000;
-    //}
+    //Backwards
+    if (keyboardState[DIK_S] & 0x80)
+    {
+        zpos -= 0.001 / 1000;
+    }
 
-    ////Right
-    //if (keyboardState[DIK_D] & 0x80)
-    //{
-    //    xpos -= 0.001 / 1000;
-    //}
+    //Right
+    if (keyboardState[DIK_D] & 0x80)
+    {
+        xpos -= 0.001 / 1000;
+    }
 
-    ////Left
-    //if (keyboardState[DIK_A] & 0x80)
-    //{
-    //    xpos += 0.001 / 1000;
-    //}
+    //Left
+    if (keyboardState[DIK_A] & 0x80)
+    {
+        xpos += 0.001 / 1000;
+    }
 
-    ////Up
-    //if (keyboardState[DIK_SPACE] & 0x80)
-    //{
-    //    ypos += 0.001 / 1000;
-    //}
+    //Up
+    if (keyboardState[DIK_SPACE] & 0x80)
+    {
+        ypos += 0.001 / 1000;
+    }
 
-    ////Down
-    //if (keyboardState[DIK_LSHIFT] & 0x80)
-    //{
-    //    ypos -= 0.001 / 1000;
-    //}
-
-
+    //Down
+    if (keyboardState[DIK_LSHIFT] & 0x80)
+    {
+        ypos -= 0.001 / 1000;
+    }
 
 
-    ////Update 
-    //_pObjectCube->_ObjectProperties->_Transformation.SetTranslation(XMFLOAT3(xpos, ypos, zpos));
+
+
+    //Update 
+    _pObjectCube->_ObjectProperties->_Transformation.SetTranslation(XMFLOAT3(xpos, ypos, zpos));
 
 }
 
@@ -226,10 +235,10 @@ void Home::InitDirectInput(HINSTANCE instance)
     DIMouse->SetDataFormat(&c_dfDIMouse);
     DIMouse->SetCooperativeLevel(NULL, DISCL_EXCLUSIVE | DISCL_FOREGROUND);
 }
-void Home::ClearRenderTarget()
+void Home::ClearRenderTarget(ID3D11RenderTargetView* render_target)
 {
     // Clear the back buffer
-    _pContext->GetDeviceContext()->ClearRenderTargetView(_pDevice->GetRenderTargetView().Get(), Colors::MidnightBlue);
+    _pContext->GetDeviceContext()->ClearRenderTargetView(render_target, Colors::MidnightBlue);
     // Clear the depth buffer to 1.0 (max depth)
     _pContext->GetDeviceContext()->ClearDepthStencilView(_pDevice->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
@@ -292,7 +301,7 @@ void Home::Draw()
 {
     _pObjectQuad->Draw(_pDevice, _pContext->GetDeviceContext().Get());
 
-    /*_pObjectCube->Draw( _pDevice, _pContext->GetDeviceContext().Get());*/
+    /*_pObjectCube->Draw( _pDevice, _pContext->GetDeviceContext().Get());
 }
 
 

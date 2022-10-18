@@ -116,17 +116,44 @@ void Device::CreateDepth()
 
 }
 
+void Device::CreatePost()
+{
+    // Create depth stencil texture
+    D3D11_TEXTURE2D_DESC descTexture = {};
+    descTexture.Width = _viewWidth;
+    descTexture.Height = _viewHeight;
+    descTexture.MipLevels = 1;
+    descTexture.ArraySize = 1;
+    descTexture.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    descTexture.SampleDesc.Count = 1;
+    descTexture.Usage = D3D11_USAGE_DEFAULT;
+    descTexture.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    descTexture.CPUAccessFlags = 0;
+    descTexture.MiscFlags = 0;
+
+    _pd3dDevice->CreateTexture2D(&descTexture, nullptr, &_pRTTRenderTargetTexture);
+}
 
 
 
-void Device::CreateRenderTargetView(Microsoft::WRL::ComPtr<IDXGISwapChain> swap_chain)
+ void Device::CreateRTTRenderTargetView(Microsoft::WRL::ComPtr<IDXGISwapChain> swap_chain , ID3D11Texture2D* texture)
 {
     // Create a render target view
-    ID3D11Texture2D* pBackBuffer = nullptr;
+    ID3D11Texture2D* pBackBuffer = texture;
     swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-    _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &_pRenderTargetView);
+    _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, _pRTTRenderTargetView.GetAddressOf());
     pBackBuffer->Release();
+    
 }
+ void Device::CreateRenderTargetView( Microsoft::WRL::ComPtr<IDXGISwapChain> swap_chain, ID3D11Texture2D* texture)
+ {
+     // Create a render target view
+     ID3D11Texture2D* pBackBuffer = texture;
+     swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+     _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, _pRenderTargetView.GetAddressOf());
+     pBackBuffer->Release();
+
+ }
 
 //Old InitMesh Function
 HRESULT	Device::CreateConstantBuffer()

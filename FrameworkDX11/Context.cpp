@@ -15,9 +15,9 @@ void Context::SetViewport(int width , int height)
     _pDeviceContext->RSSetViewports(1, &vp);
 }
 
-void Context::SetRenderTargetView(ID3D11RenderTargetView* render_target, ID3D11DepthStencilView* depth_view)
+void Context::SetRenderTargetView(ID3D11RenderTargetView * render_target[], ID3D11DepthStencilView* depth_view, int num_views)
 {
-    _pDeviceContext.Get()->OMSetRenderTargets(1, &render_target, depth_view);
+    _pDeviceContext.Get()->OMSetRenderTargets(num_views, &render_target[1], depth_view);
 }
 
 /*
