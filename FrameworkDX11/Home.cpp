@@ -46,11 +46,15 @@ HRESULT Home::InitScene(int width, int height)
     int g_viewWidth = 720;
     int g_viewHeight = 1280;
     _pCamera = new Camera(XMFLOAT4(0.0f, 2.0f, -4.0f, 0.0f), XMFLOAT4(0.0f, -0.05f, 0.05f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
-    
-    _pObjectCube = new ObjectCube();
-    _pObjectCube->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-    _pObjectCube->InitialiseShader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"PixelShader.hlsl", L"VertexShader.hlsl");
+    //
+    //_pObjectCube = new ObjectCube();
+    //_pObjectCube->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    //_pObjectCube->InitialiseShader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"PixelShader.hlsl", L"VertexShader.hlsl");
 
+    _pObjectQuad = new ObjectQuad();
+    _pObjectQuad->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _pObjectQuad->InitialiseShader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"PixelShaderQuad.hlsl", L"VertexShaderQuad.hlsl");
+   
     return S_OK;
     
 
@@ -72,7 +76,8 @@ void Home::Render()
 
 
     // Update the cube transform, material etc. 
-    _pObjectCube->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    //_pObjectCube->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _pObjectQuad->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
     UpdateConstantBuffer();
     Draw();
 
@@ -84,7 +89,7 @@ void Home::Render()
 
     ImGui::Begin("Engine Simulations");
     _pCamera->ImGuiCameraSettings();
-    _pObjectCube->_ObjectProperties->_pShader.get()->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+  //  _pObjectCube->_ObjectProperties->_pShader.get()->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
     if (ImGui::CollapsingHeader("Active Lighting Controls"))
     {
 
@@ -96,7 +101,7 @@ void Home::Render()
 
     }
 
-    if (ImGui::CollapsingHeader("Active Cube Controls"))
+    /*f (ImGui::CollapsingHeader("Active Cube Controls"))
     {
 
         ImGui::DragFloat("X", &_pObjectCube->_ObjectProperties->_Transformation.Translation.x, 0.1f, -20.0f, 20.0f);
@@ -104,7 +109,7 @@ void Home::Render()
         ImGui::DragFloat("Z", &_pObjectCube->_ObjectProperties->_Transformation.Translation.z, 0.1f, -20.0f, 20.0f);
 
   
-    }
+    }*/
     ImGui::End();
     //Render IMGUI
     ImGui::Render();
@@ -155,51 +160,51 @@ void Home::Input(HINSTANCE instance)
     DIMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseCurrState);
     DIKeyBoard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
 
-    float xpos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().x;
-    float ypos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().y;
-    float zpos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().z;
+    //float xpos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().x;
+    //float ypos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().y;
+    //float zpos = _pObjectCube->_ObjectProperties->_Transformation.GetTranslate().z;
 
-    //Forward
-    if (keyboardState[DIK_W] & 0x80)
-    {
-        zpos += 0.001 / 1000;
-    }
+    ////Forward
+    //if (keyboardState[DIK_W] & 0x80)
+    //{
+    //    zpos += 0.001 / 1000;
+    //}
 
-    //Backwards
-    if (keyboardState[DIK_S] & 0x80)
-    {
-        zpos -= 0.001 / 1000;
-    }
+    ////Backwards
+    //if (keyboardState[DIK_S] & 0x80)
+    //{
+    //    zpos -= 0.001 / 1000;
+    //}
 
-    //Right
-    if (keyboardState[DIK_D] & 0x80)
-    {
-        xpos -= 0.001 / 1000;
-    }
+    ////Right
+    //if (keyboardState[DIK_D] & 0x80)
+    //{
+    //    xpos -= 0.001 / 1000;
+    //}
 
-    //Left
-    if (keyboardState[DIK_A] & 0x80)
-    {
-        xpos += 0.001 / 1000;
-    }
+    ////Left
+    //if (keyboardState[DIK_A] & 0x80)
+    //{
+    //    xpos += 0.001 / 1000;
+    //}
 
-    //Up
-    if (keyboardState[DIK_SPACE] & 0x80)
-    {
-        ypos += 0.001 / 1000;
-    }
+    ////Up
+    //if (keyboardState[DIK_SPACE] & 0x80)
+    //{
+    //    ypos += 0.001 / 1000;
+    //}
 
-    //Down
-    if (keyboardState[DIK_LSHIFT] & 0x80)
-    {
-        ypos -= 0.001 / 1000;
-    }
-
-
+    ////Down
+    //if (keyboardState[DIK_LSHIFT] & 0x80)
+    //{
+    //    ypos -= 0.001 / 1000;
+    //}
 
 
-    //Update 
-    _pObjectCube->_ObjectProperties->_Transformation.SetTranslation(XMFLOAT3(xpos, ypos, zpos));
+
+
+    ////Update 
+    //_pObjectCube->_ObjectProperties->_Transformation.SetTranslation(XMFLOAT3(xpos, ypos, zpos));
 
 }
 
@@ -231,18 +236,31 @@ void Home::ClearRenderTarget()
 void Home::UpdateConstantBuffer()
 {
 
+    //// get the game object world transform
+    //XMMATRIX mGO = XMLoadFloat4x4(&_pObjectCube->World);
+
+    //// store this and the view / projection in a constant buffer for the vertex shader to use
+    //ConstantBuffer cb1;
+    //cb1.mWorld = XMMatrixTranspose(mGO);
+    //cb1.mView = XMMatrixTranspose(_pCamera->CalculateViewMatrix());
+    //cb1.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
+    //cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
+    //cb1.EyePosW = XMFLOAT3(_pCamera->GetUp().x , _pCamera->GetUp().y , _pCamera->GetUp().z);
+    //_pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);
+   
+
+
     // get the game object world transform
-    XMMATRIX mGO = XMLoadFloat4x4(&_pObjectCube->World);
+    XMMATRIX mGO2 = XMLoadFloat4x4(&_pObjectQuad->World);
 
     // store this and the view / projection in a constant buffer for the vertex shader to use
-    ConstantBuffer cb1;
-    cb1.mWorld = XMMatrixTranspose(mGO);
-    cb1.mView = XMMatrixTranspose(_pCamera->CalculateViewMatrix());
-    cb1.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
-    cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
-    cb1.EyePosW = XMFLOAT3(_pCamera->GetUp().x , _pCamera->GetUp().y , _pCamera->GetUp().z);
-    _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);
-   
+    ConstantBuffer cb2;
+    cb2.mWorld = XMMatrixTranspose(mGO2);
+    cb2.mView = XMMatrixTranspose(_pCamera->CalculateViewMatrix());
+    cb2.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
+    cb2.vOutputColor = XMFLOAT4(0, 0, 0, 0);
+    cb2.EyePosW = XMFLOAT3(_pCamera->GetUp().x, _pCamera->GetUp().y, _pCamera->GetUp().z);
+    _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb2, 0, 0);
     //I Store Lighting values in constant buffer function since we pass the light property values to the constant buffer, we can change this eventual;ly
 
     _Lighting.Enabled = static_cast<int>(true);
@@ -272,8 +290,9 @@ void Home::UpdateConstantBuffer()
 }
 void Home::Draw()
 {
+    _pObjectQuad->Draw(_pDevice, _pContext->GetDeviceContext().Get());
 
-    _pObjectCube->Draw( _pDevice, _pContext->GetDeviceContext().Get());
+    /*_pObjectCube->Draw( _pDevice, _pContext->GetDeviceContext().Get());*/
 }
 
 

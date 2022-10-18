@@ -19,6 +19,7 @@
 
 #include "Object.h"
 #include "ObjectCube.h"
+#include "bjectQuad.h"
 #include "structures.h"
 
 #include <vector>
@@ -73,5 +74,7 @@ public:
 
 	}
 	ObjectCube* _pObjectCube;
+	ObjectQuad* _pObjectQuad;
+
 };
 
