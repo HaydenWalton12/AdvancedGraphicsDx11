@@ -4,6 +4,8 @@
     <FxCompile Include="OldShader.fx" />
     <FxCompile Include="VertexShader.hlsl" />
     <FxCompile Include="PixelShader.hlsl" />
+    <FxCompile Include="PixelShaderQuad.hlsl" />
+    <FxCompile Include="VertexShaderQuad.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DDSTextureLoader.cpp" />
@@ -37,6 +39,7 @@
     <ClCompile Include="Context.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectCube.cpp" />
+    <ClCompile Include="ObjectQuad.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DDSTextureLoader.h" />
@@ -75,6 +78,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectTransformation.h" />
     <ClInclude Include="ObjectCube.h" />
+    <ClInclude Include="ObjectQuad.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Tutorial01.rc" />
