@@ -1,11 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <FxCompile Include="OldShader.fx" />
-    <FxCompile Include="VertexShader.hlsl" />
-    <FxCompile Include="PixelShader.hlsl" />
-    <FxCompile Include="PixelShaderQuad.hlsl" />
-    <FxCompile Include="VertexShaderQuad.hlsl" />
+    <FxCompile Include="shader.fx" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DDSTextureLoader.cpp" />
@@ -37,9 +33,10 @@
     <ClCompile Include="Home.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="Context.cpp" />
-    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="Lighting.cpp" />
     <ClCompile Include="ObjectCube.cpp" />
-    <ClCompile Include="ObjectQuad.cpp" />
+    <ClCompile Include="DeviceResources.cpp" />
+    <ClCompile Include="Object.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DDSTextureLoader.h" />
@@ -75,10 +72,10 @@
     <ClInclude Include="Home.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="Context.h" />
-    <ClInclude Include="Object.h" />
-    <ClInclude Include="ObjectTransformation.h" />
+    <ClInclude Include="Lighting.h" />
+    <ClInclude Include="Objects.h" />
     <ClInclude Include="ObjectCube.h" />
-    <ClInclude Include="ObjectQuad.h" />
+    <ClInclude Include="DeviceResources.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Tutorial01.rc" />
@@ -91,5 +88,8 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{9cd25f8a-371e-42d9-931c-0737a3482273}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader1.fx" />
   </ItemGroup>
 </Project>

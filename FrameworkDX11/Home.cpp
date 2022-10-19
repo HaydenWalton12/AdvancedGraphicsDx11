@@ -8,10 +8,11 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
 
     _Instance = instance;
 
-    _pDevice = new Device(hwnd, width, height);
+    device = new DeviceResources();
     _pContext = new Context(hwnd, width, height);
 
-    _pDevice->CreateDevice(_pContext , _pContext->GetDeviceContext().Get() , _pContext->GetFactory1().Get());
+    device->CreateDevice();
+    device->CreateResources();
     _pContext->SetViewport(1280, 720);
     _pContext->SetSwapChain(_pDevice->GetDevice().Get());
     _pDevice->CreateRenderTargetView(_pContext->GetSwapChain().Get());

@@ -29,7 +29,7 @@
 #include "Device.h"
 #include "Context.h"
 
-
+#include "DeviceResources.h"
 //Centre Of Entire FrameWork that will collate all elements together to create functional system
 //Collates Elements To Create Executable Runtime
 class Home
@@ -50,7 +50,7 @@ public:
 
 	Camera* _pCamera;
 	HINSTANCE _Instance;
-
+	DeviceResources* device;
 	Device* _pDevice;
 	Context* _pContext;
 	Light _Lighting;
