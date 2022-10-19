@@ -13,12 +13,7 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
 
     device->CreateDevice();
     device->CreateResources();
-    _pContext->SetViewport(1280, 720);
-    _pContext->SetSwapChain(_pDevice->GetDevice().Get());
-    _pDevice->CreateRenderTargetView(_pContext->GetSwapChain().Get());
 
-    _pContext->SetRenderTargetView(_pDevice->GetRenderTargetView().Get(), _pDevice->GetDepthStencilView().Get());
-    _pDevice->CreateConstantBuffer();
     //Setup ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
