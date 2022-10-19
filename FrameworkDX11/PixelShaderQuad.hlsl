@@ -18,7 +18,15 @@ struct PS_INPUT
 float4 PS(PS_INPUT Input) : SV_TARGET
 {
 
-    float4 vColour = tex.Sample(samLinear, Input.Tex);
+    float4 color = tex.Sample(samLinear, Input.Tex);
     
-    return float4(1, 0, 0, 0); //the red color
+    float3 red = float3(0.393f, 0.769f, 0.189f);
+    float3 green = float3(0.349f, 0.686f, 0.168f);
+    float3 blue = float3(0.272f, 0.534f, 0.131f);
+
+    float3 output;
+    output.r = dot(color.rgb, red);
+    output.g = dot(color.rgb, green);
+    output.b = dot(color.rgb, blue);
+    return float4(output, color.a);
 }

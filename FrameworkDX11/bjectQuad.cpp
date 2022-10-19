@@ -54,10 +54,6 @@ HRESULT ObjectQuad::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 	// Set primitive topology
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// load and setup textures
-	hr = CreateDDSTextureFromFile(device, L"Resources\\TerracottaBaseColor.dds", nullptr, _ObjectProperties->_pTextureResourceView.GetAddressOf());
-	if (FAILED(hr))
-		return hr;
 
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));

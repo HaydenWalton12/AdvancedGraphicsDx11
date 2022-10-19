@@ -72,7 +72,11 @@ void Home::Render()
 
     ClearRenderTarget(_pDevice->GetRenderTargetView().Get());
     //_pContext->SetRenderTargetView(&target_views[1], _pDevice->GetDepthStencilView().Get(), 1);
-    _pContext->_pDeviceContext.Get()->OMSetRenderTargets(1, &target_views[0], _pDevice->GetDepthStencilView().Get());
+    _pContext->_pDeviceContext.Get()->OMSetRenderTargets(1, _pDevice->GetRTTRenderTargetView().GetAddressOf(), _pDevice->GetDepthStencilView().Get());
+
+
+
+    _pContext->_pDeviceContext.Get()->OMSetRenderTargets(1, _pDevice->GetRenderTargetView().GetAddressOf() , _pDevice->GetDepthStencilView().Get());
 
 
     float t = CalculateDeltaTime(); // capped at 60 fps
@@ -98,31 +102,27 @@ void Home::Render()
     if (ImGui::CollapsingHeader("Active Lighting Controls"))
     {
 
-        ImGui::DragFloat("X", &_Lighting.Position.x ,0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("X", &_Lighting.Position.x, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Y", &_Lighting.Position.y, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Z", &_Lighting.Position.z, 0.1f, -20.0f, 20.0f);
 
-   
+
 
     }
 
-     if (ImGui::CollapsingHeader("Active Cube Controls"))
+    if (ImGui::CollapsingHeader("Active Cube Controls"))
     {
 
         ImGui::DragFloat("X", &_pObjectCube->_ObjectProperties->_Transformation.Translation.x, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Y", &_pObjectCube->_ObjectProperties->_Transformation.Translation.y, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Z", &_pObjectCube->_ObjectProperties->_Transformation.Translation.z, 0.1f, -20.0f, 20.0f);
 
-  
+
     }
     ImGui::End();
     //Render IMGUI
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-    
-
-    _pContext->_pDeviceContext.Get()->OMSetRenderTargets(1, &target_views[1], _pDevice->GetDepthStencilView().Get());
-
 
 
     // Present our back buffer to our front buffer
@@ -246,30 +246,30 @@ void Home::UpdateConstantBuffer()
 {
 
     //// get the game object world transform
-    //XMMATRIX mGO = XMLoadFloat4x4(&_pObjectCube->World);
+    XMMATRIX mGO = XMLoadFloat4x4(&_pObjectCube->World);
 
-    //// store this and the view / projection in a constant buffer for the vertex shader to use
-    //ConstantBuffer cb1;
-    //cb1.mWorld = XMMatrixTranspose(mGO);
-    //cb1.mView = XMMatrixTranspose(_pCamera->CalculateViewMatrix());
-    //cb1.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
-    //cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
-    //cb1.EyePosW = XMFLOAT3(_pCamera->GetUp().x , _pCamera->GetUp().y , _pCamera->GetUp().z);
-    //_pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);
+    // store this and the view / projection in a constant buffer for the vertex shader to use
+    ConstantBuffer cb1;
+    cb1.mWorld = XMMatrixTranspose(mGO);
+    cb1.mView = XMMatrixTranspose(_pCamera->CalculateViewMatrix());
+    cb1.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
+    cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
+    cb1.EyePosW = XMFLOAT3(_pCamera->GetUp().x , _pCamera->GetUp().y , _pCamera->GetUp().z);
+    _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);
    
 
 
     // get the game object world transform
-    XMMATRIX mGO2 = XMLoadFloat4x4(&_pObjectQuad->World);
+    //XMMATRIX mGO2 = XMLoadFloat4x4(&_pObjectQuad->World);
 
-    // store this and the view / projection in a constant buffer for the vertex shader to use
-    ConstantBuffer cb2;
-    cb2.mWorld = XMMatrixTranspose(mGO2);
-    cb2.mView = XMMatrixTranspose(_pCamera->CalculateViewMatrix());
-    cb2.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
-    cb2.vOutputColor = XMFLOAT4(0, 0, 0, 0);
-    cb2.EyePosW = XMFLOAT3(_pCamera->GetUp().x, _pCamera->GetUp().y, _pCamera->GetUp().z);
-    _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb2, 0, 0);
+    //// store this and the view / projection in a constant buffer for the vertex shader to use
+    //ConstantBuffer cb2;
+    //cb2.mWorld = XMMatrixTranspose(mGO2);
+    //cb2.mView = XMMatrixTranspose(_pCamera->CalculateViewMatrix());
+    //cb2.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
+    //cb2.vOutputColor = XMFLOAT4(0, 0, 0, 0);
+    //cb2.EyePosW = XMFLOAT3(_pCamera->GetUp().x, _pCamera->GetUp().y, _pCamera->GetUp().z);
+    //_pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb2, 0, 0);
     //I Store Lighting values in constant buffer function since we pass the light property values to the constant buffer, we can change this eventual;ly
 
     _Lighting.Enabled = static_cast<int>(true);
@@ -301,7 +301,7 @@ void Home::Draw()
 {
     _pObjectQuad->Draw(_pDevice, _pContext->GetDeviceContext().Get());
 
-    /*_pObjectCube->Draw( _pDevice, _pContext->GetDeviceContext().Get());
+    _pObjectCube->Draw( _pDevice, _pContext->GetDeviceContext().Get());
 }
 
 

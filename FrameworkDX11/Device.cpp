@@ -141,7 +141,7 @@ void Device::CreatePost()
     // Create a render target view
     ID3D11Texture2D* pBackBuffer = texture;
     swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-    _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, _pRTTRenderTargetView.GetAddressOf());
+    _pd3dDevice->CreateRenderTargetView(_pRTTRenderTargetTexture.Get(), nullptr, _pRTTRenderTargetView.GetAddressOf());
     pBackBuffer->Release();
     
 }
