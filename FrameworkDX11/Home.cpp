@@ -10,6 +10,7 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
 
     _pDevice = new Device(hwnd, width, height);
     _pContext = new Context(hwnd, width, height);
+
     _pDevice->CreateDevice(_pContext , _pContext->GetDeviceContext().Get() , _pContext->GetFactory1().Get());
     _pContext->SetViewport(1280, 720);
     _pContext->SetSwapChain(_pDevice->GetDevice().Get());
@@ -56,64 +57,46 @@ HRESULT Home::InitScene(int width, int height)
 
 }
 
+//Executes Game Loop
+void Home::Tick()
+{
+    //Handles game-world state midification, and input
+    Update();
+    //Renders a single frame per-tick of scene
+    Render();
+}
+
+//Draws The Scene - Renders a single frame per-tick of scene
 void Home::Render()
 {
-    //Im GUI Draw Order , Must Be after dx11 draw order
+    float t = CalculateDeltaTime(); // capped at 60 fps
+    //Dont Try and render anything before first update
+    if (t == 0.0f)
+    {
+        return;
+    }
 
+    //Clears and sets new view for back buffer 
+    Clear();
+
+    //Render Code Placed Here ,ALL And anything regarding proeprties of rendering the scene
+    Draw();
+    PresentIMGui();
+
+    Present();
+
+}
+
+//Updates Resources & World/ Objects
+void Home::Update()
+{
+    //Detect Input ,Can Determine World/Resource Values That Determine Rendered Scene
     Input(_Instance);
 
-    ClearRenderTarget();
-
-
-    float t = CalculateDeltaTime(); // capped at 60 fps
-    if (t == 0.0f)
-        return;
-
-
-
-    // Update the cube transform, material etc. 
     _pObjectCube->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+
+    //Update World Resources
     UpdateConstantBuffer();
-    Draw();
-
-
-
-    ImGui_ImplDX11_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
-
-    ImGui::Begin("Engine Simulations");
-    _pCamera->ImGuiCameraSettings();
-    _pObjectCube->_ObjectProperties->_pShader.get()->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-    if (ImGui::CollapsingHeader("Active Lighting Controls"))
-    {
-
-        ImGui::DragFloat("X", &_Lighting.Position.x ,0.1f, -20.0f, 20.0f);
-        ImGui::DragFloat("Y", &_Lighting.Position.y, 0.1f, -20.0f, 20.0f);
-        ImGui::DragFloat("Z", &_Lighting.Position.z, 0.1f, -20.0f, 20.0f);
-
-   
-
-    }
-
-    if (ImGui::CollapsingHeader("Active Cube Controls"))
-    {
-
-        ImGui::DragFloat("X", &_pObjectCube->_ObjectProperties->_Transformation.Translation.x, 0.1f, -20.0f, 20.0f);
-        ImGui::DragFloat("Y", &_pObjectCube->_ObjectProperties->_Transformation.Translation.y, 0.1f, -20.0f, 20.0f);
-        ImGui::DragFloat("Z", &_pObjectCube->_ObjectProperties->_Transformation.Translation.z, 0.1f, -20.0f, 20.0f);
-
-  
-    }
-    ImGui::End();
-    //Render IMGUI
-    ImGui::Render();
-    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
-
-
-    // Present our back buffer to our front buffer
-    _pContext->GetSwapChain()->Present(0, 0);
 }
 
 
@@ -221,12 +204,60 @@ void Home::InitDirectInput(HINSTANCE instance)
     DIMouse->SetDataFormat(&c_dfDIMouse);
     DIMouse->SetCooperativeLevel(NULL, DISCL_EXCLUSIVE | DISCL_FOREGROUND);
 }
-void Home::ClearRenderTarget()
+//Clear Function Clears RenderTarget , Default BackGround, Then Sets Default Render Target
+void Home::Clear()
 {
     // Clear the back buffer
     _pContext->GetDeviceContext()->ClearRenderTargetView(_pDevice->GetRenderTargetView().Get(), Colors::MidnightBlue);
-    // Clear the depth buffer to 1.0 (max depth)
+    // Clear the depth view 
     _pContext->GetDeviceContext()->ClearDepthStencilView(_pDevice->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+    _pContext->GetDeviceContext()->OMGetRenderTargets(1, _pDevice->GetRenderTargetView().GetAddressOf(), _pDevice->GetDepthStencilView().GetAddressOf());
+}
+
+//Present Method , presents swapchain for switching back/front buffers, critical to rendering
+void Home::Present()
+{
+
+    // Present our back buffer to our front buffer , Utility Of Adding A 1
+    _pContext->GetSwapChain()->Present(1, 0);
+}
+
+//Presents ImGUi , With all Given functionality to rendering
+void Home::PresentIMGui()
+{
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("Engine Simulations");
+    _pCamera->ImGuiCameraSettings();
+    _pObjectCube->_ObjectProperties->_pShader.get()->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    if (ImGui::CollapsingHeader("Active Lighting Controls"))
+    {
+
+        ImGui::DragFloat("X", &_Lighting.Position.x, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Y", &_Lighting.Position.y, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Z", &_Lighting.Position.z, 0.1f, -20.0f, 20.0f);
+
+
+
+    }
+
+    if (ImGui::CollapsingHeader("Active Cube Controls"))
+    {
+
+        ImGui::DragFloat("X", &_pObjectCube->_ObjectProperties->_Transformation.Translation.x, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Y", &_pObjectCube->_ObjectProperties->_Transformation.Translation.y, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Z", &_pObjectCube->_ObjectProperties->_Transformation.Translation.z, 0.1f, -20.0f, 20.0f);
+
+
+    }
+    ImGui::End();
+    //Render IMGUI
+    ImGui::Render();
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
 }
 void Home::UpdateConstantBuffer()
 {

@@ -57,12 +57,16 @@ public:
 	LightPropertiesConstantBuffer _Lighting_Properties;
 	void InitialiseApplication(HWND hwnd, HINSTANCE instance, int width, int height);
 	HRESULT InitScene(int width, int height);
+	void Tick();
 	void Render();
+	void Update();
 
 	float CalculateDeltaTime();
 	void Input(HINSTANCE instance);
 	void InitDirectInput(HINSTANCE instance);
-	void ClearRenderTarget();
+	void Clear();
+	void Present();
+	void PresentIMGui();
 	void UpdateConstantBuffer();
 	void Draw();
 

@@ -21,8 +21,6 @@ struct ObjectProperties
 	Transformation _Transformation;
 	MaterialPropertiesConstantBuffer	_Material;
 
-
-
 	Microsoft::WRL::ComPtr <ID3D11Buffer> _pVertexBuffer;
 	Microsoft::WRL::ComPtr <ID3D11Buffer> _pIndexBuffer;
 	Microsoft::WRL::ComPtr <ID3D11Buffer> _pMaterialConstantBuffer;
@@ -31,7 +29,9 @@ struct ObjectProperties
 	Microsoft::WRL::ComPtr <ID3D11ShaderResourceView> _pTextureResourceView;
 	Microsoft::WRL::ComPtr <ID3D11ShaderResourceView> _pNormalResourceView;
 	Microsoft::WRL::ComPtr <ID3D11ShaderResourceView> _pParallaxResourceView;
+
 	Microsoft::WRL::ComPtr <ID3D11SamplerState> _pSamplerState;
+	
 	std::unique_ptr<Shader> _pShader;
 
 	void SetTransformationMatrix(XMFLOAT3 translation, XMFLOAT3 scale, XMFLOAT3 rotation)

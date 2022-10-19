@@ -36,8 +36,8 @@ Home*                   g_application;
 int						g_viewWidth = 1280;
 int						g_viewHeight = 720;
 //--------------------------------------------------------------------------------------
-// Entry point to the program. Initializes everything and goes into a message processing 
-// loop. Idle time is used to render the scene.
+// Entry point to the program. Initializes everything and goes into a message processing loop.
+// 
 //--------------------------------------------------------------------------------------
 int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow )
 {
@@ -62,7 +62,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
         }
         else
         {
-            g_application->Render();
+            g_application->Tick();
         }
     }
 
