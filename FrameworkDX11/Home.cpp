@@ -10,7 +10,7 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
     _window = hwnd;
     device = new DeviceResources();
     _pContext = new Context(hwnd, width, height);
-
+    device->SetWindow(hwnd, height, width);
     device->CreateDevice();
     device->CreateResources();
     InitialiseImGui();

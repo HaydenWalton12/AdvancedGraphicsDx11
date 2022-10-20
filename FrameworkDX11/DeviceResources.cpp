@@ -89,7 +89,7 @@ void DeviceResources::CreateResources()
     //Cast - Forces One Data Type to be converted into another
     //static_cast - performs a nonpolymorphic cast.
     const UINT backBufferWidth = static_cast<UINT>(_windowWidth);
-    const UINT backBufferHeight = static_cast<UINT>(_windowWidth);
+    const UINT backBufferHeight = static_cast<UINT>(_windowHeight);
 
     //If Swapchain already exists, resize to accomidate new window values
     if (_swapChain != nullptr)
@@ -195,9 +195,9 @@ void DeviceResources::CreateResources()
 void DeviceResources::SetWindow(HWND window, int height, int width)
 {
     _window = window;
-
-    _windowWidth = width;
-    _windowHeight = height;
+    GetClientRect(_window , &_outputSize);
+    _windowWidth = _outputSize.right - _outputSize.left;
+    _windowHeight = _outputSize.bottom - _outputSize.top;
 
 }
 
