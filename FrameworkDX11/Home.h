@@ -47,7 +47,7 @@ public:
 
 	DIMOUSESTATE MouseLastState;
 	LPDIRECTINPUT8 DirectInput;
-
+	HWND _window;
 	Camera* _pCamera;
 	HINSTANCE _Instance;
 	DeviceResources* device;
@@ -66,7 +66,9 @@ public:
 	void InitDirectInput(HINSTANCE instance);
 	void Clear();
 	void Present();
+	
 	void PresentIMGui();
+	void InitialiseImGui();
 	void UpdateConstantBuffer();
 	void Draw();
 

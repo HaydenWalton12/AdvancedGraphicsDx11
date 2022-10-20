@@ -7,25 +7,13 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
 {
 
     _Instance = instance;
-
+    _window = hwnd;
     device = new DeviceResources();
     _pContext = new Context(hwnd, width, height);
 
     device->CreateDevice();
     device->CreateResources();
-
-    //Setup ImGui
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    ImGui_ImplWin32_Init(hwnd);
-    ImGui_ImplDX11_Init(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-    ImGui::StyleColorsDark();
-
-    _pDevice->CreateDepth();
-
-
-
+    InitialiseImGui();
 
     InitDirectInput(instance);
     InitScene(width, height);
@@ -235,9 +223,6 @@ void Home::PresentIMGui()
         ImGui::DragFloat("X", &_Lighting.Position.x, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Y", &_Lighting.Position.y, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Z", &_Lighting.Position.z, 0.1f, -20.0f, 20.0f);
-
-
-
     }
 
     if (ImGui::CollapsingHeader("Active Cube Controls"))
@@ -253,6 +238,17 @@ void Home::PresentIMGui()
     //Render IMGUI
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+}
+void Home::InitialiseImGui()
+{
+    //Setup ImGui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplWin32_Init(_window);
+    ImGui_ImplDX11_Init(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    ImGui::StyleColorsDark();
 
 }
 void Home::UpdateConstantBuffer()

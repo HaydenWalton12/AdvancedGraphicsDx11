@@ -82,7 +82,7 @@ void DeviceResources::CreateResources()
     _d3dDepthStencilView.Reset();
     _renderTarget.Reset();
     _depthStencil.Reset();
-    _d3dContext.Reset();
+    _d3dContext->Flush();
 
     //Determine Render target size
 
@@ -188,6 +188,21 @@ void DeviceResources::CreateResources()
 
     _d3dDevice->CreateDepthStencilView(_depthStencil.Get(), &descDSV, _d3dDepthStencilView.GetAddressOf());
 
+
+
+}
+
+void DeviceResources::SetWindow(HWND window, int height, int width)
+{
+    _window = window;
+
+    _windowWidth = width;
+    _windowHeight = height;
+
+}
+
+void DeviceResources::WindowSizedChanged(int width, int height)
+{
 
 
 }

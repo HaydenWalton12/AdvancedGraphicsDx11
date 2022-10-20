@@ -36,8 +36,9 @@ public:
 	//Creates Device Resources
 	void CreateDevice();	//|
 	void CreateResources();	//|Split  functions into two for simplicity purposes
+
 	void SetWindow(HWND window, int height, int width);
-	void WindowSizedChanged(int height, int width);
+	void WindowSizedChanged(int width, int height);
 
 
 	// Direct3D Accessors.
@@ -73,6 +74,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  _d3dRenderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>  _d3dDepthStencilView;
 
+	//Instead of using arbitary numbers , we can utilise this structure to store/define dimensions of viewport, allowing us to further
+	//easily change viewport dynamically
+	D3D11_VIEWPORT                                  _screenViewport;
 
 
 	//Direct 3D Properties 
