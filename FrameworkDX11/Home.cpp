@@ -13,6 +13,7 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
     device->SetWindow(hwnd, height, width);
     device->CreateDevice();
     device->CreateResources();
+    device->CreateConstantBuffer();
     InitialiseImGui();
 
     InitDirectInput(instance);
@@ -33,8 +34,8 @@ HRESULT Home::InitScene(int width, int height)
     _pCamera = new Camera(XMFLOAT4(0.0f, 2.0f, -4.0f, 0.0f), XMFLOAT4(0.0f, -0.05f, 0.05f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
     
     _pObjectCube = new ObjectCube();
-    _pObjectCube->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-    _pObjectCube->InitialiseShader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"PixelShader.hlsl", L"VertexShader.hlsl");
+    _pObjectCube->InitMesh(device->GetD3DDevice(), device->GetD3DDeviceContext());
+    _pObjectCube->InitialiseShader(device->GetD3DDevice(), device->GetD3DDeviceContext(), L"PixelShader.hlsl", L"VertexShader.hlsl");
 
     return S_OK;
     
@@ -77,7 +78,7 @@ void Home::Update()
     //Detect Input ,Can Determine World/Resource Values That Determine Rendered Scene
     Input(_Instance);
 
-    _pObjectCube->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _pObjectCube->Update(device->GetD3DDevice(), device->GetD3DDeviceContext());
 
     //Update World Resources
     UpdateConstantBuffer();
@@ -192,11 +193,11 @@ void Home::InitDirectInput(HINSTANCE instance)
 void Home::Clear()
 {
     // Clear the back buffer
-    _pContext->GetDeviceContext()->ClearRenderTargetView(_pDevice->GetRenderTargetView().Get(), Colors::MidnightBlue);
+    device->GetD3DDeviceContext()->ClearRenderTargetView(device->GetRenderTargetView(), Colors::MidnightBlue);
     // Clear the depth view 
-    _pContext->GetDeviceContext()->ClearDepthStencilView(_pDevice->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+    device->GetD3DDeviceContext()->ClearDepthStencilView(device->GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-    _pContext->GetDeviceContext()->OMGetRenderTargets(1, _pDevice->GetRenderTargetView().GetAddressOf(), _pDevice->GetDepthStencilView().GetAddressOf());
+    device->GetD3DDeviceContext()->OMGetRenderTargets(1, device->GetRenderTargetView1().GetAddressOf(), device->GetDepthStencilView1().GetAddressOf());
 }
 
 //Present Method , presents swapchain for switching back/front buffers, critical to rendering
@@ -204,7 +205,7 @@ void Home::Present()
 {
 
     // Present our back buffer to our front buffer , Utility Of Adding A 1
-    _pContext->GetSwapChain()->Present(1, 0);
+    device->GetSwapChain()->Present(1, 0);
 }
 
 //Presents ImGUi , With all Given functionality to rendering
@@ -216,7 +217,7 @@ void Home::PresentIMGui()
 
     ImGui::Begin("Engine Simulations");
     _pCamera->ImGuiCameraSettings();
-    _pObjectCube->_ObjectProperties->_pShader.get()->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _pObjectCube->_ObjectProperties->_pShader.get()->ImGuiShaderSettings(device->GetD3DDevice(), device->GetD3DDeviceContext());
     if (ImGui::CollapsingHeader("Active Lighting Controls"))
     {
 
@@ -247,7 +248,7 @@ void Home::InitialiseImGui()
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplWin32_Init(_window);
-    ImGui_ImplDX11_Init(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    ImGui_ImplDX11_Init(device->GetD3DDevice(), device->GetD3DDeviceContext());
     ImGui::StyleColorsDark();
 
 }
@@ -264,7 +265,7 @@ void Home::UpdateConstantBuffer()
     cb1.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
     cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
     cb1.EyePosW = XMFLOAT3(_pCamera->GetUp().x , _pCamera->GetUp().y , _pCamera->GetUp().z);
-    _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);
+    device->GetD3DDeviceContext()->UpdateSubresource(device->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);
    
     //I Store Lighting values in constant buffer function since we pass the light property values to the constant buffer, we can change this eventual;ly
 
@@ -288,7 +289,7 @@ void Home::UpdateConstantBuffer()
 
 
     _Lighting_Properties.Lights[0] = _Lighting;
-    _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetLightConstantBuffer().Get(), 0, nullptr, &_Lighting_Properties, 0, 0);
+    device->GetD3DDeviceContext()->UpdateSubresource(device->GetLightBuffer().Get(), 0, nullptr, &_Lighting_Properties, 0, 0);
 
 
 
@@ -296,7 +297,7 @@ void Home::UpdateConstantBuffer()
 void Home::Draw()
 {
 
-    _pObjectCube->Draw( _pDevice, _pContext->GetDeviceContext().Get());
+    _pObjectCube->Draw( device, device->GetD3DDeviceContext());
 }
 
 

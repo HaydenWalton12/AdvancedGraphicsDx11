@@ -225,14 +225,14 @@ void ObjectCube::InitialiseShader(ID3D11Device* device, ID3D11DeviceContext* dev
 	}
 }
 
-void ObjectCube::Draw(Device* device, ID3D11DeviceContext* device_context)
+void ObjectCube::Draw(DeviceResources* device, ID3D11DeviceContext* device_context)
 {
 	device_context->VSSetShader(_ObjectProperties->_pShader.get()->GetVertexShader().Get(), nullptr, 0);
 	device_context->VSSetConstantBuffers(0 , 1 , device->GetConstantBuffer().GetAddressOf());
 
 
 	device_context->PSSetShader(_ObjectProperties->_pShader->GetPixelShader().Get(), nullptr, 0);
-	device_context->PSSetConstantBuffers(2, 1, device->GetLightConstantBuffer().GetAddressOf());
+	device_context->PSSetConstantBuffers(2, 1, device->GetLightBuffer().GetAddressOf());
 	
 	ID3D11Buffer* materialCB = _ObjectProperties->_pMaterialConstantBuffer.Get();
 	device_context->PSSetConstantBuffers(1, 1, &materialCB);

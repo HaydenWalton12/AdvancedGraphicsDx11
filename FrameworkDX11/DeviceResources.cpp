@@ -74,6 +74,7 @@ void DeviceResources::CreateDevice()
     }
 }
 //Resources need  to be recreated everytime window size is changed, further required for rendering tasks
+//Used to initially create resources & when resources are changed, they are remade to fit viewport
 void DeviceResources::CreateResources()
 {
     //Clear Previous Resources window size context
@@ -113,27 +114,7 @@ void DeviceResources::CreateResources()
         // Create swap chain
         Microsoft::WRL::ComPtr<ID3D11Device1> device_1;
         _dxgiFactory1.Get()->QueryInterface(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(_dxgiFactory2.GetAddressOf()));
-        if (_dxgiFactory2.Get())
-        {
-            // DirectX 11.1 or later
-            _d3dDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(device_1.GetAddressOf()));
-           
-            DXGI_SWAP_CHAIN_DESC1 sd = {};
-            sd.Width = backBufferWidth;
-            sd.Height = backBufferHeight;
-            sd.Format = _backBufferFormat;//  DXGI_FORMAT_R16G16B16A16_FLOAT;////DXGI_FORMAT_R8G8B8A8_UNORM;
-            sd.SampleDesc.Count = 1;
-            sd.SampleDesc.Quality = 0;
-            sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-            sd.BufferCount = 1;
-
-            _dxgiFactory2->CreateSwapChainForHwnd(_d3dDevice.Get(), _window, &sd, nullptr, nullptr, &_swapChain1);
-           
-
-            _dxgiFactory2->Release();
-        }
-        else
-        {
+       
             // DirectX 11.0 systems
             DXGI_SWAP_CHAIN_DESC sd = {};
             sd.BufferCount = 1;
@@ -149,7 +130,7 @@ void DeviceResources::CreateResources()
             sd.Windowed = TRUE;
 
             _dxgiFactory1->CreateSwapChain(_d3dDevice.Get(), &sd, &_swapChain);
-        }
+        
 
         // Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
         _dxgiFactory1->MakeWindowAssociation(_window, DXGI_MWA_NO_ALT_ENTER);
@@ -158,12 +139,14 @@ void DeviceResources::CreateResources()
   
     }
 
-
+    ID3D11Texture2D* pBackBuffer = nullptr;
+    //Create A Render Target view of the swap chain back buffer
+    _swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D) , &_renderTarget);
+    _d3dDevice->CreateRenderTargetView(_renderTarget.Get(), nullptr, _d3dRenderTargetView.ReleaseAndGetAddressOf());
 
     //Create Depth Stencil
     //Allocates A 2D Surface
-
-        // Create depth stencil texture
+    // Create/Recreate depth stencil texture
     D3D11_TEXTURE2D_DESC descDepth = {};
     descDepth.Width = backBufferWidth;
     descDepth.Height = backBufferHeight;
@@ -173,13 +156,12 @@ void DeviceResources::CreateResources()
     descDepth.SampleDesc.Count = 1;
     descDepth.SampleDesc.Quality = 0;
     descDepth.Usage = D3D11_USAGE_DEFAULT;
-    descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+    descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
     descDepth.CPUAccessFlags = 0;
     descDepth.MiscFlags = 0;
 
-    _d3dDevice->CreateTexture2D(&descDepth, nullptr, &_depthStencil);
-
-
+    _d3dDevice->CreateTexture2D(&descDepth, nullptr, _depthStencil.ReleaseAndGetAddressOf());
+    
     // Create the depth stencil view
     D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
     descDSV.Format = descDepth.Format;
@@ -203,6 +185,41 @@ void DeviceResources::SetWindow(HWND window, int height, int width)
 
 void DeviceResources::WindowSizedChanged(int width, int height)
 {
+
+
+}
+
+void DeviceResources::CreateConstantBuffer()
+{
+    HRESULT hr;
+
+    //May Or May Not need to hhange this , since we may only be using cubes for this simulation.
+    // Create the constant buffer
+    D3D11_BUFFER_DESC bd = {};
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = sizeof(Mesh) * 24;
+    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    bd.CPUAccessFlags = 0;
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = sizeof(WORD) * 36;        // 36 vertices needed for 12 triangles in a triangle list
+    bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    bd.CPUAccessFlags = 0;
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = sizeof(ConstantBuffer);
+    bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bd.CPUAccessFlags = 0;
+    hr = _d3dDevice->CreateBuffer(&bd, nullptr, &_ConstantBuffer);
+
+
+
+
+    // Create the light constant buffer
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = sizeof(LightPropertiesConstantBuffer);
+    bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bd.CPUAccessFlags = 0;
+    hr = _d3dDevice->CreateBuffer(&bd, nullptr, &_LightConstantBuffer);
+
 
 
 }

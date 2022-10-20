@@ -40,6 +40,8 @@ public:
 	void SetWindow(HWND window, int height, int width);
 	void WindowSizedChanged(int width, int height);
 
+	void CreateConstantBuffer();
+
 
 	// Direct3D Accessors.
 	auto                    GetD3DDevice() const noexcept { return _d3dDevice.Get(); }
@@ -52,16 +54,17 @@ public:
 	ID3D11Texture2D* GetDepthStencil() const noexcept { return _depthStencil.Get(); }
 	ID3D11RenderTargetView* GetRenderTargetView() const noexcept { return _d3dRenderTargetView.Get(); }
 	ID3D11DepthStencilView* GetDepthStencilView() const noexcept { return _d3dDepthStencilView.Get(); }
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>GetRenderTargetView1() { return  _d3dRenderTargetView; }
 
-
-
-
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>GetDepthStencilView1() { return  _d3dDepthStencilView; }
+	Microsoft::WRL::ComPtr<ID3D11Buffer>GetConstantBuffer() { return  _ConstantBuffer; }
+	Microsoft::WRL::ComPtr<ID3D11Buffer>GetLightBuffer() { return  _LightConstantBuffer; }
 private:
 	//Direct3D Objects - Used For Utility/ Initialisation purposes
 
 	Microsoft::WRL::ComPtr<IDXGIFactory1>               _dxgiFactory1;
 	Microsoft::WRL::ComPtr<IDXGIFactory2>               _dxgiFactory2;
-	Microsoft::WRL::ComPtr<ID3D11Device1>              _d3dDevice; //Represents Virtual Adapter , used to create resources
+	Microsoft::WRL::ComPtr<ID3D11Device>              _d3dDevice; //Represents Virtual Adapter , used to create resources
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1>       _d3dContext; //Class that represents ID3D11DeviceContext, which is used for rendering commands
 	Microsoft::WRL::ComPtr<IDXGISwapChain>            _swapChain;
 	Microsoft::WRL::ComPtr<IDXGISwapChain1>            _swapChain1;
@@ -73,6 +76,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D>         _depthStencil;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  _d3dRenderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>  _d3dDepthStencilView;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>			_ConstantBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer>			_LightConstantBuffer;
 
 	//Instead of using arbitary numbers , we can utilise this structure to store/define dimensions of viewport, allowing us to further
 	//easily change viewport dynamically
