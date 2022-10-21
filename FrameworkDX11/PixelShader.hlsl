@@ -177,10 +177,43 @@ LightingResult ComputeLighting(float3 vertexPos, float3 N, float3 vertextoeyets)
 }
 float2 ParallaxMapping(float2 tex_coords, float3 viewing_direction)
 {
-    float height_scale = 0.1f;
-    float height = txParallax.Sample(samLinear, tex_coords).z;
-    float2 p = viewing_direction.xy / viewing_direction.z * (height * height_scale);
-    return tex_coords - p;
+
+    float minLayers = 8;
+    float maxLayers = 96;
+    int numLayers = 10;
+    int height_scale = 1;
+    //Calculate Each Size Of Each Layer
+    float layerDepth = 1.0f / numLayers;
+    
+
+    
+    
+    //the mmount to shift the texture coordinate per layer step (from vector)
+    float2 p = viewing_direction.xy * height_scale;
+    float2 deltaTexCoords = p / numLayers;
+
+    //depth of each layer
+    float currentLayerDepth = 0.0f;
+    //Get Initial Values
+    float2 currentTexCoords = tex_coords;
+    float currentDepthMapValue = txParallax.Sample(samLinear, currentTexCoords).r;
+    
+    float2 dx = ddx(tex_coords);
+    float2 dy = ddy(tex_coords);
+
+    
+    while(currentLayerDepth < currentDepthMapValue)
+    {
+        //shift texture coordinates along direction of P
+        currentTexCoords -= deltaTexCoords;
+        
+        //Get depthmap value at current texture coordinate
+        currentDepthMapValue = 1.0f - txParallax.SampleGrad(samLinear, currentTexCoords , dx , dy).r;
+        
+        currentLayerDepth += layerDepth;
+    }
+    return currentTexCoords;
+  
 }
 //--------------------------------------------------------------------------------------
 // Pixel Shader
@@ -192,7 +225,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
 
     //Rebuilds TBN matrix from calculated vertex shader
     float3x3 tbn = float3x3(IN.Tan, IN.Binorm, IN.Norm);
-    
+    //float3 vertexToEye = normalize(mul(tbn, EyePosition - IN.worldPos.xyz));
     float3 vertexToEye = EyePosition - IN.worldPos.xyz;
     float3 vertexToLight = Lights[0].Position - IN.worldPos.xyz;
     
@@ -204,9 +237,38 @@ float4 PS(PS_INPUT IN) : SV_TARGET
 
     float3 toEyeTS = VectorToTangentSpace(vertexToEye, TBN_inv);
   
+    float2 texcoords = IN.Tex;
     
-    float2 calculated_texCoords = ParallaxMapping(IN.Tex, toEyeTS);
+    float minLayers = 8;
+    float maxLayers = 32;
     
+    int numLayers = (int) lerp(maxLayers, minLayers, max(dot(float3(0.0f, 0.0f, 1.0f), toEyeTS), 0.0f));
+    
+    float layerDepth = 1.0 / numLayers;
+    
+    float currentLayerDepth = 0.0;
+    
+    //Depending on the intensity in regards to the correlating heightmap , this could/couldnt map the parallax map correctly to the surface
+    float2 P = toEyeTS.xy * 0.04;
+    float2 deltaTexCoords = P / numLayers;
+    
+    //Get Initial Values
+    float2 current_tex_coords = texcoords;
+    float currentDepthMapValue = txParallax.Sample(samLinear, current_tex_coords).r;
+    float2 dx = ddx(IN.Tex);
+    float2 dy = ddy(IN.Tex);
+    
+    while (currentLayerDepth < currentDepthMapValue)
+    {
+        current_tex_coords -= deltaTexCoords;
+        
+        currentDepthMapValue = 1.0f - txParallax.SampleGrad(samLinear, current_tex_coords ,dx , dy).x;
+        
+        currentLayerDepth += layerDepth;
+        
+    }
+    
+    float2 calculated_texCoords = current_tex_coords;
    
     float3 bumpNormal = IN.Norm;
     float4 bumpMap;
