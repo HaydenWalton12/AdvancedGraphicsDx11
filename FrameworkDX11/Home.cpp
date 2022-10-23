@@ -73,10 +73,10 @@ void Home::Render()
 
     // Update the cube transform, material etc. 
     _pObjectCube->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+
     UpdateConstantBuffer();
+
     Draw();
-
-
 
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
@@ -84,36 +84,38 @@ void Home::Render()
 
     ImGui::Begin("Engine Simulations");
     _pCamera->ImGuiCameraSettings();
+    
     _pObjectCube->_ObjectProperties->_pShader.get()->ImGuiShaderSettings(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+
     if (ImGui::CollapsingHeader("Active Lighting Controls"))
     {
-
         ImGui::DragFloat("X", &_Lighting.Position.x ,0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Y", &_Lighting.Position.y, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Z", &_Lighting.Position.z, 0.1f, -20.0f, 20.0f);
-
-   
-
     }
 
     if (ImGui::CollapsingHeader("Active Cube Controls"))
     {
-
         ImGui::DragFloat("X", &_pObjectCube->_ObjectProperties->_Transformation.Translation.x, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Y", &_pObjectCube->_ObjectProperties->_Transformation.Translation.y, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Z", &_pObjectCube->_ObjectProperties->_Transformation.Translation.z, 0.1f, -20.0f, 20.0f);
-
-  
     }
+
+    if (ImGui::CollapsingHeader("Active Cube Rotate"))
+    {
+        ImGui::DragFloat("X", &_pObjectCube->_ObjectProperties->_Transformation.Rotation.x, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Y", &_pObjectCube->_ObjectProperties->_Transformation.Rotation.y, 0.1f, -20.0f, 20.0f);
+        ImGui::DragFloat("Z", &_pObjectCube->_ObjectProperties->_Transformation.Rotation.z, 0.1f, -20.0f, 20.0f);
+    }
+
     ImGui::End();
     //Render IMGUI
     ImGui::Render();
+
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
-
-
     // Present our back buffer to our front buffer
     _pContext->GetSwapChain()->Present(0, 0);
+
 }
 
 
@@ -202,8 +204,6 @@ void Home::Input(HINSTANCE instance)
     _pObjectCube->_ObjectProperties->_Transformation.SetTranslation(XMFLOAT3(xpos, ypos, zpos));
 
 }
-
-
 void Home::InitDirectInput(HINSTANCE instance)
 {
     DirectInput8Create(instance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&DirectInput, NULL);
@@ -241,6 +241,7 @@ void Home::UpdateConstantBuffer()
     cb1.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
     cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
     cb1.EyePosW = XMFLOAT3(_pCamera->GetUp().x , _pCamera->GetUp().y , _pCamera->GetUp().z);
+
     _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);
    
     //I Store Lighting values in constant buffer function since we pass the light property values to the constant buffer, we can change this eventual;ly

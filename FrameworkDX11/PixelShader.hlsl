@@ -175,7 +175,11 @@ LightingResult ComputeLighting(float3 vertexPos, float3 N, float3 vertextoeyets)
 
     return totalResult;
 }
-float2 ParallaxMapping(float2 tex_coords, float3 viewing_direction)
+
+//Steep Parallax Mapping Works Upon Simple Parallax, but instead of 1 sample, multiple samples are done to better pinpoint P To The ideal
+//value of B (B being the theoretical intersected point the view direction should see
+
+float2 SteepParallaxMapping(float2 tex_coords, float3 viewing_direction)
 {
 
     float minLayers = 8;
@@ -185,7 +189,7 @@ float2 ParallaxMapping(float2 tex_coords, float3 viewing_direction)
     //Calculate Each Size Of Each Layer
     float layerDepth = 1.0f / numLayers;
     
-
+     
     
     
     //the mmount to shift the texture coordinate per layer step (from vector)
@@ -215,13 +219,70 @@ float2 ParallaxMapping(float2 tex_coords, float3 viewing_direction)
     return currentTexCoords;
   
 }
+//Primitive ParallaxMapping Process, Gives Rudimentary Results
+float SimpleParallaxMapping(float2 tex_coords, float3 view_direction)
+{
+    //Surface TexCoord A
+    float2 initial_tex_coord = tex_coords;
+    
+    
+    //Height Of a Relative To The Height Map
+    float height = txParallax.Sample(samLinear, initial_tex_coord).r;
+    
+    //P Is The Vector Used To Approximate The Offset Texture Coordinate
+    //Uses the viewdirection to know the offset direction texture will be sampled from , the height of A "H(A)
+    //0.1f represents the strength of parallax max itself , scales P 
+    float2 P = view_direction.xy / view_direction.z * (height * 0.1f);   
+    
+    //Results, deducting A "initial_tex_coord" with P , this difference gives us our texture offset coordinate 
+    return initial_tex_coord - P;
+}
+
+float CalculateParallaxSelfShadow(float3 L, float2 initialTexCoords)
+{
+    
+    //Calculate Lighting only for surface oriented to the light source
+    if (L.z >= 0.0)
+    {
+        return 0.0f;
+    }
+    
+    float minLayers = 8;
+    float maxLayers = 32;
+    float a = abs(dot(float3(0.0f, 0.0f, 1.0f), L));
+    //Lerp - Performs Linear interpolation
+    int numLayers = lerp(maxLayers, minLayers, a);
+    
+    float layerDepth = 1.0f / numLayers;
+    
+    float2 currentTexCoords = initialTexCoords;
+    float currentDepthMapValue = txParallax.Sample(samLinear, currentTexCoords).r;
+    float currentLayerDepth = currentDepthMapValue;
+    
+    float P = L.xy / L.z * 0.01f;
+    float2 deltaTexCoords = P / numLayers;
+    
+    
+    float2 dx = ddx(initialTexCoords);
+    float2 dy = ddy(initialTexCoords);
+    
+    while (currentLayerDepth <= currentDepthMapValue && currentLayerDepth > 0.0f)
+    {
+        currentTexCoords += deltaTexCoords;
+        currentDepthMapValue = txParallax.SampleGrad(samLinear, currentTexCoords, dx, dy).r;
+        currentLayerDepth -= layerDepth;
+    }
+    float r = currentLayerDepth > currentDepthMapValue ? 0.0 : 1.0;
+    return r;
+}
+
 //--------------------------------------------------------------------------------------
 // Pixel Shader
 //--------------------------------------------------------------------------------------
 
 float4 PS(PS_INPUT IN) : SV_TARGET
 {
-    float shadowFactor = 1;
+    float shadowFactor = 1.0f;
 
     //Rebuilds TBN matrix from calculated vertex shader
     float3x3 tbn = float3x3(IN.Tan, IN.Binorm, IN.Norm);
@@ -249,7 +310,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float currentLayerDepth = 0.0;
     
     //Depending on the intensity in regards to the correlating heightmap , this could/couldnt map the parallax map correctly to the surface
-    float2 P = toEyeTS.xy * 0.04;
+    float2 P = toEyeTS.xy * 0.01;
     float2 deltaTexCoords = P / numLayers;
     
     //Get Initial Values
@@ -262,22 +323,39 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     {
         current_tex_coords -= deltaTexCoords;
         
-        currentDepthMapValue = 1.0f - txParallax.SampleGrad(samLinear, current_tex_coords ,dx , dy).x;
+        currentDepthMapValue =  txParallax.SampleGrad(samLinear, current_tex_coords ,dx , dy).r;
         
         currentLayerDepth += layerDepth;
         
     }
     
-    float2 calculated_texCoords = current_tex_coords;
    
+   
+    float2 previousTexCoords = current_tex_coords + deltaTexCoords;
+    
+    //Get depth after and before collision for linear interpolation
+    float afterDepth = currentDepthMapValue - currentLayerDepth;
+    float beforeDepth = txParallax.Sample(samLinear, previousTexCoords).r - currentLayerDepth + layerDepth;
+    
+    //Interpolation of texture coordinates
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    float2 finalTexCoords = previousTexCoords * weight + current_tex_coords * (1.0f - weight);
+    
+    
+     shadowFactor = CalculateParallaxSelfShadow(lightVectorTS, finalTexCoords);
+    
     float3 bumpNormal = IN.Norm;
     float4 bumpMap;
-    bumpMap = txNormal.Sample(samLinear, calculated_texCoords);
+    
+    bumpMap = txNormal.Sample(samLinear, finalTexCoords);
 	
 	//Exampnd the range of the normal value from (0 , +1) to (-1 , +1)
     bumpMap = (bumpMap * 2.0f) - 1.0f;
     bumpNormal = normalize(mul(bumpMap.xyz, tbn));
 
+    
+    
+    
     LightingResult lit = ComputeLighting(eyeVectorTS, bumpNormal, lightVectorTS);
 
     //Issue With this is that all lighting appears upon the surface of the normal map
@@ -287,8 +365,8 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float4 texColor = { 1, 1, 1, 1 };
     float4 emissive = Material.Emissive;
     float4 ambient = Material.Ambient * GlobalAmbient;
-    float4 diffuse = Material.Diffuse * lit.Diffuse;
-    float4 specular = Material.Specular * lit.Specular;
+    float4 diffuse = Material.Diffuse * lit.Diffuse * shadowFactor;
+    float4 specular = Material.Specular * lit.Specular * shadowFactor;
 
     if (Material.UseTexture)
     {

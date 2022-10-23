@@ -170,16 +170,16 @@ HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// load and setup textures
-	hr = CreateDDSTextureFromFile(device, L"Resources\\TerracottaBaseColor.dds", nullptr, _ObjectProperties->_pTextureResourceView.GetAddressOf());
+	hr = CreateDDSTextureFromFile(device, L"Resources\\metal_grate_rusty_diff_4k.dds", nullptr, _ObjectProperties->_pTextureResourceView.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 
 	// load and setup textures
-	hr = CreateDDSTextureFromFile(device, L"Resources\\Terracottanormal.dds", nullptr, _ObjectProperties->_pNormalResourceView.GetAddressOf());
+	hr = CreateDDSTextureFromFile(device, L"Resources\\metal_grate_rusty_nor_dx_4k.dds", nullptr, _ObjectProperties->_pNormalResourceView.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 	// load and setup textures
-	hr = CreateDDSTextureFromFile(device, L"Resources\\Heightmap.dds", nullptr, _ObjectProperties->_pParallaxResourceView.GetAddressOf());
+	hr = CreateDDSTextureFromFile(device, L"Resources\\metal_grate_rusty_disp_4k.dds", nullptr, _ObjectProperties->_pParallaxResourceView.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 	D3D11_SAMPLER_DESC sampDesc;

@@ -77,7 +77,7 @@ struct Transformation
 	void UpdateObject()
 	{
 		_Scale = XMMatrixScaling(1.0f, 1.0f, 1.0f);
-		XMStoreFloat4x4(&World, _Translation);
+		XMStoreFloat4x4(&World, _Scale * _Translation * _Rotation);
 
 	}
 	void SetScale(XMFLOAT3 scale)
