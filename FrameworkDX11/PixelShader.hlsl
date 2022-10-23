@@ -273,6 +273,7 @@ float CalculateParallaxSelfShadow(float3 L, float2 initialTexCoords)
         currentLayerDepth -= layerDepth;
     }
     float r = currentLayerDepth > currentDepthMapValue ? 0.0 : 1.0;
+    
     return r;
 }
 
