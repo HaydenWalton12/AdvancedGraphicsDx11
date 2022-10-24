@@ -112,7 +112,7 @@ void Shader::CreateVertexShader(ID3D11Device* device, ID3D11DeviceContext* devic
 	pVSBlob->Release();
 
 
-	//Needs Rendering Command System
+	//Needs Rendering Command System+
 	device_context->IASetInputLayout(vertex_layout);
 }
 void Shader::CreatePixelShader(ID3D11Device* device, ID3D11DeviceContext* device_context)
