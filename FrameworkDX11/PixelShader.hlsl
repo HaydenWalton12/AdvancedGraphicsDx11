@@ -300,7 +300,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float3 toEyeTS = VectorToTangentSpace(vertexToEye, TBN_inv);
   
     float2 texcoords = IN.Tex;
-    
+
     float minLayers = 8;
     float maxLayers = 32;
     
@@ -311,7 +311,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float currentLayerDepth = 0.0;
     
     //Depending on the intensity in regards to the correlating heightmap , this could/couldnt map the parallax map correctly to the surface
-    float2 P = toEyeTS.xy * 0.01;
+    float2 P = toEyeTS.xy * 0.1;
     float2 deltaTexCoords = P / numLayers;
     
     //Get Initial Values
@@ -319,7 +319,8 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float currentDepthMapValue = txParallax.Sample(samLinear, current_tex_coords).r;
     float2 dx = ddx(IN.Tex);
     float2 dy = ddy(IN.Tex);
-    
+          
+
     while (currentLayerDepth < currentDepthMapValue)
     {
         current_tex_coords -= deltaTexCoords;
@@ -340,9 +341,15 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     
     //Interpolation of texture coordinates
     float weight = afterDepth / (afterDepth - beforeDepth);
+    
+
     float2 finalTexCoords = previousTexCoords * weight + current_tex_coords * (1.0f - weight);
     
-    
+        if (finalTexCoords.x > 1.0f || finalTexCoords.y > 1.0f || finalTexCoords.x < 0.0f || finalTexCoords.y < 0.0f)
+    {
+        discard;
+    }
+  
      shadowFactor = CalculateParallaxSelfShadow(lightVectorTS, finalTexCoords);
     
     float3 bumpNormal = IN.Norm;
