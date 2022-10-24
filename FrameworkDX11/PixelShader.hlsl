@@ -178,29 +178,41 @@ LightingResult ComputeLighting(float3 vertexPos, float3 N, float3 vertextoeyets)
 
 //Steep Parallax Mapping Works Upon Simple Parallax, but instead of 1 sample, multiple samples are done to better pinpoint P To The ideal
 //value of B (B being the theoretical intersected point the view direction should see
+//We Traverse each layer from top down , each layer we compare depth value to the depth value stored in the depth map (this is done to get the closest accurate sample to our point "b",
+//b being the depth map value we want to sample closest too. We cannot just get it since we need to calculate from viewing direction, initial tex coord and the height map itself.
+
 
 float2 SteepParallaxMapping(float2 tex_coords, float3 viewing_direction)
 {
 
-    float minLayers = 8;
-    float maxLayers = 96;
+ 
+ 
+    
+    //Iterative Layers We Sample From To Get Best Value - More Layers Typically The More Depth
     int numLayers = 10;
-    int height_scale = 1;
-    //Calculate Each Size Of Each Layer
+    
+    //Controls Strength Of parallax map
+    int height_scale = 0.1;
+     
+    //Calculate Each Size Of Each Layer To Ilterate threw
     float layerDepth = 1.0f / numLayers;
     
      
-    
-    
-    //the mmount to shift the texture coordinate per layer step (from vector)
+    //Calculate the P vector at current layer, will be used to calculate texture coordinate offset below
     float2 p = viewing_direction.xy * height_scale;
+    
+    //Calculate Texture coordinate offset that shifts along the direction of P , per layer
     float2 deltaTexCoords = p / numLayers;
 
-    //depth of each layer
-    float currentLayerDepth = 0.0f;
-    //Get Initial Values
+    
+        //Get Initial Values
     float2 currentTexCoords = tex_coords;
+    
+    //Sample height map to get the current depth map value , used within the while loop to sample with 
     float currentDepthMapValue = txParallax.Sample(samLinear, currentTexCoords).r;
+    
+    //depth of each layer
+    float currentLayerDepth = 0.0f
     
     float2 dx = ddx(tex_coords);
     float2 dy = ddy(tex_coords);
@@ -311,7 +323,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float currentLayerDepth = 0.0;
     
     //Depending on the intensity in regards to the correlating heightmap , this could/couldnt map the parallax map correctly to the surface
-    float2 P = toEyeTS.xy * 0.1;
+    float2 P = toEyeTS.xy * 0.01;
     float2 deltaTexCoords = P / numLayers;
     
     //Get Initial Values
@@ -345,7 +357,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
 
     float2 finalTexCoords = previousTexCoords * weight + current_tex_coords * (1.0f - weight);
     
-        if (finalTexCoords.x > 1.0f || finalTexCoords.y > 1.0f || finalTexCoords.x < 0.0f || finalTexCoords.y < 0.0f)
+    if (finalTexCoords.x > 1.0f || finalTexCoords.y > 1.0f || finalTexCoords.x < 0.0f || finalTexCoords.y < 0.0f)
     {
         discard;
     }
