@@ -30,6 +30,8 @@ struct PS_INPUT
     float2 Tex : TEXCOORD0;
     float3 Tan : TANGENT;
     float3 Binorm : BINORMAL;
+   
+ //   float3x3 TBN : POSITION;
 };
 
 
@@ -53,25 +55,10 @@ PS_INPUT VS(VS_INPUT input)
 
     output.Tex = input.Tex;
 
-
-
     //Build TBN Matrix
-    output.Tan = normalize(mul(input.Tan, World).xyz);
-    output.Norm = normalize(mul(input.Norm, World).xyz);
-    output.Binorm = normalize(mul(input.Binorm, World).xyz);
-
-	//Build TBN Matrix
+    output.Tan = normalize(mul(input.Tan, (float3x3) World));
+    output.Norm = normalize(mul(input.Norm, (float3x3) World));
+    output.Binorm = normalize(mul(input.Binorm, (float3x3) World));
     
-    //ISSUE - Input is fine ,however we do not calculate the output from said values, calculations are correct but we need to output the values, similar to
-    //how we "output.norm"
-    //float3 T = normalize(mul(input.Tan, World));
-    //float3 B = normalize(mul(input.Binorm, World));
-    //float3 N = normalize(mul(input.Norm, World));
-
-    //float3x3 TBN = float3x3(T, B, N);
-    //float3x3 TBN_inv = transpose(TBN);
-	
-    //output.eyeVectorTS = VectorToTangentSpace(vertexToEye.xyz, TBN_inv);
-    //output.lightVectorTS = VectorToTangentSpace(vertexToLight.xyz, TBN_inv);
     return output;
 }

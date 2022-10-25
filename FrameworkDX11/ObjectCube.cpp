@@ -50,29 +50,83 @@ void CalculateTangentBinormalLH(SimpleVertex v0, SimpleVertex v1, SimpleVertex v
 void CalculateModelVectors(std::vector<SimpleVertex>& vertices, std::vector<WORD>& indices)
 {
 	int faceCount, i, index;
+	SimpleVertex vertex1, vertex2, vertex3;
+	XMFLOAT3 tangent, binormal, normal;
 
 
+	// Calculate the number of faces in the model.
+	faceCount = vertices.size() / 3;
+
+	// Initialize the index to the model data.
+	index = 0;
 
 	// Go through all the faces and calculate the the tangent, binormal, and normal vectors.
-	for (int i = 0; i < 12; i++)
+	for (i = 0; i < faceCount; i++)
 	{
+		// Get the three vertices for this face from the model.
+		vertex1.Pos.x = vertices[index].Pos.x;
+		vertex1.Pos.y = vertices[index].Pos.y;
+		vertex1.Pos.z = vertices[index].Pos.z;
+		vertex1.TexCoord.x = vertices[index].TexCoord.x;
+		vertex1.TexCoord.y = vertices[index].TexCoord.y;
+		vertex1.Normal.x = vertices[index].Normal.x;
+		vertex1.Normal.y = vertices[index].Normal.y;
+		vertex1.Normal.z = vertices[index].Normal.z;
+		index++;
 
-		XMFLOAT3 tangent, binormal, normal;
+		vertex2.Pos.x = vertices[index].Pos.x;
+		vertex2.Pos.y = vertices[index].Pos.y;
+		vertex2.Pos.z = vertices[index].Pos.z;
+		vertex2.TexCoord.x = vertices[index].TexCoord.x;
+		vertex2.TexCoord.y = vertices[index].TexCoord.y;
+		vertex2.Normal.x = vertices[index].Normal.x;
+		vertex2.Normal.y = vertices[index].Normal.y;
+		vertex2.Normal.z = vertices[index].Normal.z;
+		index++;
 
-		index = i * 3;
+		vertex3.Pos.x = vertices[index].Pos.x;
+		vertex3.Pos.y = vertices[index].Pos.y;
+		vertex3.Pos.z = vertices[index].Pos.z;
+		vertex3.TexCoord.x = vertices[index].TexCoord.x;
+		vertex3.TexCoord.y = vertices[index].TexCoord.y;
+		vertex3.Normal.x = vertices[index].Normal.x;
+		vertex3.Normal.y = vertices[index].Normal.y;
+		vertex3.Normal.z = vertices[index].Normal.z;
+		index++;
+
 		// Calculate the tangent and binormal of that face.
-		CalculateTangentBinormalLH(vertices[indices[index + 0]], vertices[indices[index + 1]], vertices[indices[index + 2]], normal, tangent, binormal);
+		CalculateTangentBinormalLH(vertex1, vertex2, vertex3, normal, tangent, binormal);
 
 		// Store the normal, tangent, and binormal for this face back in the model structure.
+		vertices[index - 1].Normal.x = normal.x;
+		vertices[index - 1].Normal.y = normal.y;
+		vertices[index - 1].Normal.z = normal.z;
+		vertices[index - 1].Tangent.x = tangent.x;
+		vertices[index - 1].Tangent.y = tangent.y;
+		vertices[index - 1].Tangent.z = tangent.z;
+		vertices[index - 1].BiTangent.x = binormal.x;
+		vertices[index - 1].BiTangent.y = binormal.y;
+		vertices[index - 1].BiTangent.z = binormal.z;
 
-		vertices[indices[index + 0]].Tangent = tangent;
-		vertices[indices[index + 1]].Tangent = tangent;
-		vertices[indices[index + 2]].Tangent = tangent;
+		vertices[index - 2].Normal.x = normal.x;
+		vertices[index - 2].Normal.y = normal.y;
+		vertices[index - 2].Normal.z = normal.z;
+		vertices[index - 2].Tangent.x = tangent.x;
+		vertices[index - 2].Tangent.y = tangent.y;
+		vertices[index - 2].Tangent.z = tangent.z;
+		vertices[index - 2].BiTangent.x = binormal.x;
+		vertices[index - 2].BiTangent.y = binormal.y;
+		vertices[index - 2].BiTangent.z = binormal.z;
 
-		vertices[indices[index + 0]].BiTangent = binormal;
-		vertices[indices[index + 1]].BiTangent = binormal;
-		vertices[indices[index + 2]].BiTangent = binormal;
-
+		vertices[index - 3].Normal.x = normal.x;
+		vertices[index - 3].Normal.y = normal.y;
+		vertices[index - 3].Normal.z = normal.z;
+		vertices[index - 3].Tangent.x = tangent.x;
+		vertices[index - 3].Tangent.y = tangent.y;
+		vertices[index - 3].Tangent.z = tangent.z;
+		vertices[index - 3].BiTangent.x = binormal.x;
+		vertices[index - 3].BiTangent.y = binormal.y;
+		vertices[index - 3].BiTangent.z = binormal.z;
 	}
 
 }
