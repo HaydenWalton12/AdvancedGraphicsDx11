@@ -130,15 +130,15 @@ float3 VectorToTangentSpace(float3 vectorV, float3x3 TBN_inv)
     float3 tangentSpaceNormal = normalize(mul(vectorV, TBN_inv));
     return tangentSpaceNormal;
 }
-LightingResult DoPointLight(Light light, float3 vertexToEye, float3 vertexPos, float3 N)
+LightingResult DoPointLight(Light light, float3 worldToEye, float3 world_position, float3 N)
 {
     LightingResult result;
 
-    float3 LightDirectionToVertex = (vertexPos - light.Position).xyz;
+    float3 LightDirectionToVertex = (world_position - light.Position).xyz;
     float distance = length(LightDirectionToVertex);
     LightDirectionToVertex = LightDirectionToVertex / distance;
 
-    float3 vertexToLight = (light.Position - vertexPos).xyz;
+    float3 vertexToLight = (light.Position - world_position).xyz;
     distance = length(vertexToLight);
     vertexToLight = vertexToLight / distance;
 
@@ -147,13 +147,13 @@ LightingResult DoPointLight(Light light, float3 vertexToEye, float3 vertexPos, f
 
 
     result.Diffuse = DoDiffuse(light, vertexToLight, N) * attenuation;
-    result.Specular = DoSpecular(light, vertexToEye, LightDirectionToVertex, N) * attenuation;
+    result.Specular = DoSpecular(light, worldToEye, LightDirectionToVertex, N) * attenuation;
 
     return result;
 }
-LightingResult ComputeLighting(float3 vertexPos, float3 N, float3 vertextoeyets)
+LightingResult ComputeLighting(float3 world_position , float3 N)
 {
-    float3 vertexToEye = normalize(vertextoeyets - vertexPos).xyz;
+    float3 worldToEye = normalize(EyePosition - world_position).xyz;
 
     LightingResult totalResult = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
 
@@ -165,7 +165,7 @@ LightingResult ComputeLighting(float3 vertexPos, float3 N, float3 vertextoeyets)
         if (!Lights[i].Enabled) 
             continue;
 		
-        result = DoPointLight(Lights[i], vertexToEye, vertexPos, N);
+        result = DoPointLight(Lights[i], worldToEye, world_position, N);
 		
         totalResult.Diffuse += result.Diffuse;
         totalResult.Specular += result.Specular;
@@ -177,21 +177,34 @@ LightingResult ComputeLighting(float3 vertexPos, float3 N, float3 vertextoeyets)
     return totalResult;
 }
 /*
+    Simple Parallax Mapping - Similar To Normal Mapping Technique, however
+    with the goal of offsetting texture coordinates based upon the viewing direction
+    to further simulate added depth upon the surface
+
+    Parallax Mapping Formula
+
+    Tp = T0 + V.xy / V.z * H(T0) * ParallaxScale;
+    Or
+    Tp = T0 + V.xy * H(T0) * ParallaxScale;
+    
+    Laymans:
+    texture_offset = base_height * view_direction.xy / view_direction.z * height of original tex coord
     
 
 */
 float2 SimpleParallaxMapping( float3 view, float2 tex_coords)
 {
-    float initial_height = txParallax.Sample(samLinear, tex_coords).r;
     
-    //Calculate Texture Offset For Parallax mapping - Adheres to forumula
-    float2 tex_coord_offset = view.xy * (initial_height * 0.01f);
+    //H(T0) - Height Of Original TexCoord - Used Within Offset Calculation
+    float height = txParallax.Sample(samLinear, tex_coords).r;
     
-    //Calculate Amount of offset for parallax mapping with offset limiting
+    //T0- Base Height
+    float base_height = 0.1f;
     
+    //Tp (offset) = V.xy / V.z * Scale(Parallax_Height)
+    float2 tex_coord_offset = base_height * view.xy / view.z * height;
     
     //return modified texture coordinates
-    
     return tex_coords - tex_coord_offset;
     
 }
@@ -208,11 +221,12 @@ float2 SimpleParallaxMapping( float3 view, float2 tex_coords)
 */
 float2 SteepParallaxMapping(float3 view, float2 tex_coords)
 {
+    //H(T0) - Height Of Original TexCoord - However will change as layer is iterated
+    float height_per_layer = txParallax.Sample(samLinear, tex_coords).r;
+   
+    float base_height = 0.1f;
     //Number of layers iterate threw
-    float min_layers = 10;
-    float max_layers = 35;
-    
-    float num_layers = lerp(max_layers, min_layers, abs(dot(float3(0.0f, 0.0f, 1.0f), view)));
+    float num_layers = 35;
 
     //height of each layer
     float layer_height = 1.0f  / num_layers;
@@ -221,20 +235,16 @@ float2 SteepParallaxMapping(float3 view, float2 tex_coords)
     float current_layer_height = 0;
     
     
-    //Shift of texture coordinates for each iteration
-    float2 delta_tex = 0.1f * view.xy / view.z / num_layers;
+    //Acts As Our Offset, But Since We Iterate Threw Multiple Layers , This Needs To Represent That Calculating
+    //On 1 Step
+    float2 delta_tex = base_height * view.xy / view.z / num_layers;
 
     float2 current_tex_coords = tex_coords;
-    
-    //First depth from heightmap
-    float height = txParallax.Sample(samLinear, current_tex_coords).r;
 
-    float dx = ddx(tex_coords);
-    float dy = ddy(tex_coords);
 
-    
+    [loop]
     //While point is above surface, find point that isnt - to then return
-    while (height > current_layer_height)
+    while (height_per_layer > current_layer_height)
     {
         //To Next Layer In list
         current_layer_height += layer_height;
@@ -243,15 +253,12 @@ float2 SteepParallaxMapping(float3 view, float2 tex_coords)
         current_tex_coords -= delta_tex;
         
         //Get new depth from heightmap
-        height = txParallax.SampleGrad(samLinear, current_tex_coords, dx, dy).r;
-        
-
+        height_per_layer = txParallax.Sample(samLinear, current_tex_coords).r;
     }
     return current_tex_coords;
 }
 /*
     An improvement to steep parallax mapping , by interpolating results of the steep parallax map
-
 */
 float2 OcclusionParallaxMapping(float3 view, float2 tex_coords)
 {
@@ -387,17 +394,14 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float3x3 TBN_INV = transpose(TBN);
     
     //Converts View & Light Into Tangent Space
-    float3 view = normalize(mul(TBN_INV,EyePosition.xyz - IN.worldPos.xyz));
-    float3 light = normalize(mul(TBN_INV, Lights[0].Position.xyz - IN.worldPos.xyz));
+    float3 view = normalize(mul(TBN, EyePosW.xyz - IN.worldPos.xyz));
+    float3 light = normalize(mul(TBN, Lights[0].Position.xyz - IN.worldPos.xyz));
 
     float2 tex_coord = IN.Tex;
     
     //Parallax Mapping
     float2 calculated_tex_coords = OcclusionParallaxMapping(view, tex_coord);
-    //Parallax Self Shadowing
-    float shadowFactor = ParallaxSoftShadowMultiplier(light, calculated_tex_coords);
- 
-    
+    float shadow_factor = ParallaxSoftShadowMultiplier(light , calculated_tex_coords);
     float3 bumpNormal = IN.Norm;
     float4 bumpMap;
     
@@ -405,9 +409,9 @@ float4 PS(PS_INPUT IN) : SV_TARGET
 	
 	//Expand the range of the normal value from (0 , +1) to (-1 , +1)
     bumpMap = bumpMap * 2.0f - 1.0f;
-    bumpNormal = normalize(mul(TBN_INV, bumpMap.xyz));
+    bumpNormal = normalize(mul(TBN, bumpMap.xyz));
 
-    LightingResult lit = ComputeLighting(view, bumpNormal, light);
+    LightingResult lit = ComputeLighting(bumpNormal, light);
 
     float4 texColor = { 1, 1, 1, 1 };
     float4 emissive = Material.Emissive;
@@ -421,7 +425,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     }
 
 
-    float4 finalColor = (emissive + ambient + diffuse + specular * shadowFactor) * texColor;
+    float4 finalColor = (emissive + ambient + diffuse + specular * shadow_factor) * texColor;
 
     return finalColor;
 }

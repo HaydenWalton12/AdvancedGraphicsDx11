@@ -253,8 +253,7 @@ void Home::UpdateConstantBuffer()
     _Lighting.ConstantAttenuation = 1.0f;
     _Lighting.LinearAttenuation = 1;
     _Lighting.QuadraticAttenuation = 0.5;
-
-
+    
 
 
 
@@ -266,6 +265,8 @@ void Home::UpdateConstantBuffer()
 
 
     _Lighting_Properties.Lights[0] = _Lighting;
+
+    _Lighting_Properties.EyePosition = LightDirection;
     _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetLightConstantBuffer().Get(), 0, nullptr, &_Lighting_Properties, 0, 0);
 
 

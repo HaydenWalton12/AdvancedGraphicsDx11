@@ -135,7 +135,8 @@ HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 {
 	// Create vertex buffer
 	std::vector<SimpleVertex> vertices =
-	{ { XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) }, // 3 // 0
+	{ { 
+	XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) }, // 3 // 0
 		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) }, // 1 // 1
 		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) }, // 0 // 2
 
@@ -186,6 +187,7 @@ HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 
 	std::vector<WORD> indices =
 	{
+
      	0,1,2,
 		3,4,5,
 
@@ -203,6 +205,7 @@ HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 
 		30,31,32,
 		33,34,35
+
 	};
 	CalculateModelVectors(vertices, indices);
 
@@ -240,31 +243,31 @@ HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	////// load and setup textures
-	//hr = CreateDDSTextureFromFile(device, L"Resources\\metal_grate_rusty_diff_4k.dds", nullptr, _ObjectProperties->_pTextureResourceView.GetAddressOf());
-	//if (FAILED(hr))
-	//	return hr;
-
-	//// load and setup textures
-	//hr = CreateDDSTextureFromFile(device, L"Resources\\metal_grate_rusty_nor_dx_4k.dds", nullptr, _ObjectProperties->_pNormalResourceView.GetAddressOf());
-	//if (FAILED(hr))
-	//	return hr;
-	//// load and setup textures
-	//hr = CreateDDSTextureFromFile(device, L"Resources\\metal_grate_rusty_disp_4k.dds", nullptr, _ObjectProperties->_pParallaxResourceView.GetAddressOf());
-	//if (FAILED(hr))
-	//	return hr;
-		// load and setup textures
-	hr = CreateDDSTextureFromFile(device, L"Resources\\brickcolor.dds", nullptr, _ObjectProperties->_pTextureResourceView.GetAddressOf());
+	hr = CreateDDSTextureFromFile(device, L"Resources\\metal_grate_rusty_diff_4k.dds", nullptr, _ObjectProperties->_pTextureResourceView.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 
 	// load and setup textures
-	hr = CreateDDSTextureFromFile(device, L"Resources\\bricknormals.dds", nullptr, _ObjectProperties->_pNormalResourceView.GetAddressOf());
+	hr = CreateDDSTextureFromFile(device, L"Resources\\metal_grate_rusty_nor_dx_4k.dds", nullptr, _ObjectProperties->_pNormalResourceView.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 	// load and setup textures
-	hr = CreateDDSTextureFromFile(device, L"Resources\\brickdisplacement.dds", nullptr, _ObjectProperties->_pParallaxResourceView.GetAddressOf());
+	hr = CreateDDSTextureFromFile(device, L"Resources\\metal_grate_rusty_disp_4k.dds", nullptr, _ObjectProperties->_pParallaxResourceView.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
+	//	 load and setup textures
+	//hr = CreateDDSTextureFromFile(device, L"Resources\\brickcolor.dds", nullptr, _ObjectProperties->_pTextureResourceView.GetAddressOf());
+	//if (FAILED(hr))
+	//	return hr;
+
+	// load and setup textures
+	//hr = CreateDDSTextureFromFile(device, L"Resources\\bricknormals.dds", nullptr, _ObjectProperties->_pNormalResourceView.GetAddressOf());
+	//if (FAILED(hr))
+	//	return hr;
+	// load and setup textures
+	//hr = CreateDDSTextureFromFile(device, L"Resources\\brickdisplacement.dds", nullptr, _ObjectProperties->_pParallaxResourceView.GetAddressOf());
+	//if (FAILED(hr))
+	//	return hr;
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));
 	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC;
