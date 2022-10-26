@@ -130,15 +130,15 @@ float3 VectorToTangentSpace(float3 vectorV, float3x3 TBN_inv)
     float3 tangentSpaceNormal = normalize(mul(vectorV, TBN_inv));
     return tangentSpaceNormal;
 }
-LightingResult DoPointLight(Light light, float3 worldToEye, float3 world_position, float3 N)
+LightingResult DoPointLight(Light light, float3 vertexToEye, float3 vertexToLight, float3 normals)
 {
     LightingResult result;
 
-    float3 LightDirectionToVertex = (world_position - light.Position).xyz;
+    float3 LightDirectionToVertex = mul(vertexToLight , -1.0f);
     float distance = length(LightDirectionToVertex);
     LightDirectionToVertex = LightDirectionToVertex / distance;
 
-    float3 vertexToLight = (light.Position - world_position).xyz;
+    
     distance = length(vertexToLight);
     vertexToLight = vertexToLight / distance;
 
@@ -146,15 +146,14 @@ LightingResult DoPointLight(Light light, float3 worldToEye, float3 world_positio
     attenuation = 1;
 
 
-    result.Diffuse = DoDiffuse(light, vertexToLight, N) * attenuation;
-    result.Specular = DoSpecular(light, worldToEye, LightDirectionToVertex, N) * attenuation;
+    result.Diffuse = DoDiffuse(light, vertexToLight, normals) * attenuation;
+    result.Specular = DoSpecular(light, vertexToEye, LightDirectionToVertex, normals) * attenuation;
 
     return result;
 }
-LightingResult ComputeLighting(float3 world_position , float3 N)
+LightingResult ComputeLighting(float3 normals, float3 vertexToEye, float3 vertexToLight)
 {
-    float3 worldToEye = normalize(EyePosition - world_position).xyz;
-
+    
     LightingResult totalResult = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
 
 	[unroll]
@@ -165,7 +164,7 @@ LightingResult ComputeLighting(float3 world_position , float3 N)
         if (!Lights[i].Enabled) 
             continue;
 		
-        result = DoPointLight(Lights[i], worldToEye, world_position, N);
+        result = DoPointLight(Lights[i], vertexToEye, vertexToLight, normals);
 		
         totalResult.Diffuse += result.Diffuse;
         totalResult.Specular += result.Specular;
@@ -394,24 +393,24 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float3x3 TBN_INV = transpose(TBN);
     
     //Converts View & Light Into Tangent Space
-    float3 view = normalize(mul(TBN, EyePosW.xyz - IN.worldPos.xyz));
-    float3 light = normalize(mul(TBN, Lights[0].Position.xyz - IN.worldPos.xyz));
+    float3 view_ts = normalize(mul(TBN_INV, EyePosition.xyz - IN.worldPos.xyz));
+    float3 light_ts = normalize(mul(TBN_INV, Lights[0].Position.xyz - IN.worldPos.xyz));
 
     float2 tex_coord = IN.Tex;
     
     //Parallax Mapping
-    float2 calculated_tex_coords = OcclusionParallaxMapping(view, tex_coord);
-    float shadow_factor = ParallaxSoftShadowMultiplier(light , calculated_tex_coords);
-    float3 bumpNormal = IN.Norm;
-    float4 bumpMap;
+    float2 calculated_tex_coords = SimpleParallaxMapping(view_ts, tex_coord);
+  //  float shadow_factor = ParallaxSoftShadowMultiplier(light_ts, calculated_tex_coords);
+    float3 bump_normals = IN.Norm;
+    float4 bump_map;
     
-    bumpMap = txNormal.Sample(samLinear, calculated_tex_coords);
+    bump_map = txNormal.Sample(samLinear, calculated_tex_coords);
 	
 	//Expand the range of the normal value from (0 , +1) to (-1 , +1)
-    bumpMap = bumpMap * 2.0f - 1.0f;
-    bumpNormal = normalize(mul(TBN, bumpMap.xyz));
+    bump_map = bump_map * 2.0f - 1.0f;
+    bump_normals = normalize(mul(TBN_INV, bump_map.xyz));
 
-    LightingResult lit = ComputeLighting(bumpNormal, light);
+    LightingResult lit = ComputeLighting(light_ts, view_ts, bump_normals);
 
     float4 texColor = { 1, 1, 1, 1 };
     float4 emissive = Material.Emissive;
@@ -421,11 +420,11 @@ float4 PS(PS_INPUT IN) : SV_TARGET
 
     if (Material.UseTexture)
     {
-        texColor = txDiffuse.Sample(samLinear, calculated_tex_coords);
+        texColor = txDiffuse.Sample(samLinear, IN.Tex);
     }
 
 
-    float4 finalColor = (emissive + ambient + diffuse + specular * shadow_factor) * texColor;
+    float4 finalColor = (emissive + ambient + diffuse + specular ) * texColor;
 
     return finalColor;
 }

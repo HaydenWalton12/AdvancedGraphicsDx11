@@ -256,17 +256,17 @@ void Home::UpdateConstantBuffer()
     
 
 
-
-    XMVECTOR LightDirection = XMVectorSet(-_Lighting.Position.x, -_Lighting.Position.y, -_Lighting.Position.z, 0.0f);
+    XMFLOAT4 LightPosition = XMFLOAT4(_pCamera->GetUp().x, _pCamera->GetUp().y, _pCamera->GetUp().z, 0.0f);
+    XMVECTOR LightDirection = XMVectorSet(-LightPosition.x, -LightPosition.y, -LightPosition.z, 0.0f);
     LightDirection = XMVector3Normalize(LightDirection);
     XMStoreFloat4(&_Lighting.Direction, LightDirection);
 
 
-
+    _Lighting_Properties.EyePosition = LightPosition;
 
     _Lighting_Properties.Lights[0] = _Lighting;
 
-    _Lighting_Properties.EyePosition = LightDirection;
+
     _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetLightConstantBuffer().Get(), 0, nullptr, &_Lighting_Properties, 0, 0);
 
 
