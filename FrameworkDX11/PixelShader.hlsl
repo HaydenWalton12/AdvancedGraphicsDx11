@@ -393,14 +393,14 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float3x3 TBN_INV = transpose(TBN);
     
     //Converts View & Light Into Tangent Space
-    float3 view_ts = normalize(mul(TBN_INV, EyePosition.xyz - IN.worldPos.xyz));
-    float3 light_ts = normalize(mul(TBN_INV, Lights[0].Position.xyz - IN.worldPos.xyz));
+    float3 view_ts = normalize(mul(TBN, EyePosition.xyz - IN.worldPos.xyz));
+    float3 light_ts = normalize(mul(TBN, Lights[0].Position.xyz - IN.worldPos.xyz));
 
     float2 tex_coord = IN.Tex;
     
     //Parallax Mapping
     float2 calculated_tex_coords = SimpleParallaxMapping(view_ts, tex_coord);
-  //  float shadow_factor = ParallaxSoftShadowMultiplier(light_ts, calculated_tex_coords);
+    float shadow_factor = ParallaxSoftShadowMultiplier(light_ts, calculated_tex_coords);
     float3 bump_normals = IN.Norm;
     float4 bump_map;
     
@@ -420,7 +420,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
 
     if (Material.UseTexture)
     {
-        texColor = txDiffuse.Sample(samLinear, IN.Tex);
+        texColor = txDiffuse.Sample(samLinear, calculated_tex_coords);
     }
 
 

@@ -256,7 +256,7 @@ void Home::UpdateConstantBuffer()
     
 
 
-    XMFLOAT4 LightPosition = XMFLOAT4(_pCamera->GetUp().x, _pCamera->GetUp().y, _pCamera->GetUp().z, 0.0f);
+    XMFLOAT4 LightPosition = XMFLOAT4(_pCamera->GetPosition().x, _pCamera->GetPosition().y, _pCamera->GetPosition().z, 0.0f);
     XMVECTOR LightDirection = XMVectorSet(-LightPosition.x, -LightPosition.y, -LightPosition.z, 0.0f);
     LightDirection = XMVector3Normalize(LightDirection);
     XMStoreFloat4(&_Lighting.Direction, LightDirection);
