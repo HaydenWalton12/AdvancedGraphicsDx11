@@ -120,8 +120,8 @@ void Device::CreatePost()
 {
     // Create depth stencil texture
     D3D11_TEXTURE2D_DESC descTexture = {};
-    descTexture.Width = _viewWidth;
-    descTexture.Height = _viewHeight;
+    descTexture.Width = 1280;
+    descTexture.Height = 720;
     descTexture.MipLevels = 1;
     descTexture.ArraySize = 1;
     descTexture.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -148,7 +148,7 @@ void Device::CreatePost()
  void Device::CreateRenderTargetView( Microsoft::WRL::ComPtr<IDXGISwapChain> swap_chain, ID3D11Texture2D* texture)
  {
      // Create a render target view
-     ID3D11Texture2D* pBackBuffer = texture;
+     ID3D11Texture2D* pBackBuffer = nullptr;
      swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
      _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, _pRenderTargetView.GetAddressOf());
      pBackBuffer->Release();

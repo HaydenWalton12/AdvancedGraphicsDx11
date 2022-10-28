@@ -1,7 +1,6 @@
-#include "bjectQuad.h"
+#include "ObjectQuad.h"
 
-
-HRESULT ObjectQuad::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context , Device* device_class)
+HRESULT ObjectQuad::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 {
 	// Create vertex buffer - Create Simple Face That Will be mapped over viewport
 	std::vector<SimpleVertex> vertices =
@@ -65,14 +64,25 @@ HRESULT ObjectQuad::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context 
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
-	shaderResourceViewDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-	shaderResourceViewDesc.Texture2D.MipLevels = 1;
-
 	hr = device->CreateSamplerState(&sampDesc, _ObjectProperties->_pSamplerState.GetAddressOf());
-	device->CreateShaderResourceView(device_class->GetRTTTagetTexture().Get() , &shaderResourceViewDesc , &_pRTTShaderResourceView);
+
+	_ObjectProperties->_Material.Material.Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	_ObjectProperties->_Material.Material.Specular = XMFLOAT4(1.0f, 0.2f, 0.2f, 1.0f);
+	_ObjectProperties->_Material.Material.SpecularPower = 32.0f;
+	_ObjectProperties->_Material.Material.UseTexture = true;
+
+	// Create the material constant buffer
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(MaterialPropertiesConstantBuffer);
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = 0;
+	hr = device->CreateBuffer(&bd, nullptr, _ObjectProperties->_pMaterialConstantBuffer.GetAddressOf());
+
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
 
 	return hr;
 }
@@ -90,13 +100,18 @@ void ObjectQuad::InitialiseShader(ID3D11Device* device, ID3D11DeviceContext* dev
 void ObjectQuad::Draw(Device* device, ID3D11DeviceContext* device_context)
 {
 	device_context->VSSetShader(_ObjectProperties->_pShader.get()->GetVertexShader().Get(), nullptr, 0);
-
+	device_context->VSSetConstantBuffers(0, 1, device->GetConstantBuffer().GetAddressOf());
 
 
 	device_context->PSSetShader(_ObjectProperties->_pShader->GetPixelShader().Get(), nullptr, 0);
+	device_context->PSSetConstantBuffers(2, 1, device->GetLightConstantBuffer().GetAddressOf());
 
+	ID3D11Buffer* materialCB = _ObjectProperties->_pMaterialConstantBuffer.Get();
+	device_context->PSSetConstantBuffers(1, 1, &materialCB);
 
-	device_context->PSSetShaderResources(0, 1, &_pRTTShaderResourceView);
+	device_context->PSSetShaderResources(0, 1, _ObjectProperties->_pTextureResourceView.GetAddressOf());
+	device_context->PSSetShaderResources(1, 1, _ObjectProperties->_pNormalResourceView.GetAddressOf());
+	device_context->PSSetShaderResources(2, 1, _ObjectProperties->_pParallaxResourceView.GetAddressOf());
 	device_context->PSSetSamplers(0, 1, _ObjectProperties->_pSamplerState.GetAddressOf());
 
 	device_context->DrawIndexed(6, 0, 0);
@@ -106,5 +121,10 @@ void ObjectQuad::Update(ID3D11Device* device, ID3D11DeviceContext* device_contex
 {
 
 
+	XMMATRIX mTranslate = XMMatrixTranslation(_ObjectProperties->_Transformation.GetTranslate().x, _ObjectProperties->_Transformation.GetTranslate().y, _ObjectProperties->_Transformation.GetTranslate().z);
+	XMMATRIX world = mTranslate;
+	XMStoreFloat4x4(&World, world);
 
+
+	device_context->UpdateSubresource(_ObjectProperties->_pMaterialConstantBuffer.Get(), 0, nullptr, &_ObjectProperties->_Material, 0, 0);
 }

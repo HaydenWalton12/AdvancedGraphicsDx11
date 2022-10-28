@@ -1,6 +1,6 @@
 #include "Object.h"
 
-HRESULT Object::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
+HRESULT Object::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context, Device* device_class)
 {
 	return E_NOTIMPL;
 }

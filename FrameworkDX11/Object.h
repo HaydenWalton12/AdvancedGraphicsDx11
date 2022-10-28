@@ -28,6 +28,7 @@ struct ObjectProperties
 	Microsoft::WRL::ComPtr <ID3D11Buffer> _pMaterialConstantBuffer;
 
 	//Textures For Shader Calculations
+
 	Microsoft::WRL::ComPtr <ID3D11ShaderResourceView> _pTextureResourceView;
 	Microsoft::WRL::ComPtr <ID3D11ShaderResourceView> _pNormalResourceView;
 	Microsoft::WRL::ComPtr <ID3D11ShaderResourceView> _pParallaxResourceView;
@@ -62,7 +63,7 @@ class Object
 {
 public:
 
-	virtual HRESULT InitMesh(ID3D11Device* device, ID3D11DeviceContext* context);
+	virtual HRESULT InitMesh(ID3D11Device* device, ID3D11DeviceContext* context, Device* device_class);
 	virtual void InitialiseShader(ID3D11Device* device, ID3D11DeviceContext* device_context, const wchar_t* pixel_shader_path, const wchar_t* vertex_shader_path);
 	
 	virtual void Draw(Device* device, ID3D11DeviceContext* device_context);

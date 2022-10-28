@@ -14,8 +14,9 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
     _pContext->SetViewport(1280, 720);
     _pContext->SetSwapChain(_pDevice->GetDevice().Get());
     _pDevice->CreatePost();
-    _pDevice->CreateRTTRenderTargetView( _pContext->GetSwapChain().Get() , _pDevice->GetRTTTagetTexture().Get());
+    _pDevice->CreateDepth();
     _pDevice->CreateRenderTargetView( _pContext->GetSwapChain().Get() , nullptr);
+    _pContext->GetDeviceContext().Get()->OMSetRenderTargets(1, _pDevice->GetRenderTargetView().GetAddressOf(), _pDevice->GetDepthStencilView().Get());
 
     _pDevice->CreateConstantBuffer();
     //Setup ImGui
@@ -26,7 +27,6 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
     ImGui_ImplDX11_Init(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
     ImGui::StyleColorsDark();
 
-    _pDevice->CreateDepth();
 
 
 
@@ -48,14 +48,12 @@ HRESULT Home::InitScene(int width, int height)
     int g_viewHeight = 1280;
     _pCamera = new Camera(XMFLOAT4(0.0f, 2.0f, -4.0f, 0.0f), XMFLOAT4(0.0f, -0.05f, 0.05f, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f), g_viewWidth, g_viewHeight, XM_PIDIV2, 0.01f, 100.0f);
     //
+   
     _pObjectCube = new ObjectCube();
-    _pObjectCube->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _pObjectCube->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), _pDevice);
     _pObjectCube->InitialiseShader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"PixelShader.hlsl", L"VertexShader.hlsl");
 
-    _pObjectQuad = new ObjectQuad();
-    _pObjectQuad->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
-    _pObjectQuad->InitialiseShader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"PixelShaderQuad.hlsl", L"VertexShaderQuad.hlsl");
-   
+  
     return S_OK;
     
 
@@ -66,17 +64,12 @@ void Home::Render()
     //Im GUI Draw Order , Must Be after dx11 draw order
 
     Input(_Instance);
-    ID3D11RenderTargetView* target_views[2];
-    target_views[0] = _pDevice->GetRenderTargetView().Get();
-    target_views[1] = _pDevice->GetRTTRenderTargetView().Get();
+
 
     ClearRenderTarget(_pDevice->GetRenderTargetView().Get());
-    //_pContext->SetRenderTargetView(&target_views[1], _pDevice->GetDepthStencilView().Get(), 1);
-    _pContext->_pDeviceContext.Get()->OMSetRenderTargets(1, _pDevice->GetRTTRenderTargetView().GetAddressOf(), _pDevice->GetDepthStencilView().Get());
 
+   
 
-
-    _pContext->_pDeviceContext.Get()->OMSetRenderTargets(1, _pDevice->GetRenderTargetView().GetAddressOf() , _pDevice->GetDepthStencilView().Get());
 
 
     float t = CalculateDeltaTime(); // capped at 60 fps
@@ -299,7 +292,7 @@ void Home::UpdateConstantBuffer()
 }
 void Home::Draw()
 {
-    _pObjectQuad->Draw(_pDevice, _pContext->GetDeviceContext().Get());
+    //_pObjectQuad->Draw(_pDevice, _pContext->GetDeviceContext().Get());
 
     _pObjectCube->Draw( _pDevice, _pContext->GetDeviceContext().Get());
 }

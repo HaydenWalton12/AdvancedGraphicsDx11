@@ -4,7 +4,6 @@ SamplerState samLinear : register(s0);
 struct VS_INPUT
 {
     float4 Pos : POSITION;
-    float3 Norm : NORMAL;
     float2 Tex : TEXCOORD0;
 };
 
@@ -28,5 +27,6 @@ float4 PS(PS_INPUT Input) : SV_TARGET
     output.r = dot(color.rgb, red);
     output.g = dot(color.rgb, green);
     output.b = dot(color.rgb, blue);
+    
     return float4(output, color.a);
 }

@@ -77,7 +77,7 @@ void CalculateModelVectors(std::vector<SimpleVertex>& vertices, std::vector<WORD
 
 }
 
-HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
+HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context, Device* device_class)
 {
 	// Create vertex buffer
 	std::vector<SimpleVertex> vertices =

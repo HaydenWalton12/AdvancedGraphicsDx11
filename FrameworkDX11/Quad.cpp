@@ -1,18 +1,14 @@
-#include "bjectQuad.h"
+#include "Quad.h"
 
-
-HRESULT ObjectQuad::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context , Device* device_class)
+HRESULT ObjectQuad::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context  , Context* context_class)
 {
 	// Create vertex buffer - Create Simple Face That Will be mapped over viewport
 	std::vector<SimpleVertex> vertices =
 	{
-
 		{ XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
 		{ XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
 		{ XMFLOAT3(1.0f, 1.0f,  0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
 		{ XMFLOAT3(1.0f, -1.0f,  0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
-
-
 	};
 
 	std::vector<WORD> indices =
@@ -64,16 +60,28 @@ HRESULT ObjectQuad::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context 
 	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
-	shaderResourceViewDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-	shaderResourceViewDesc.Texture2D.MipLevels = 1;
-
+	
 	hr = device->CreateSamplerState(&sampDesc, _ObjectProperties->_pSamplerState.GetAddressOf());
-	device->CreateShaderResourceView(device_class->GetRTTTagetTexture().Get() , &shaderResourceViewDesc , &_pRTTShaderResourceView);
+	// Create depth stencil texture
+	D3D11_TEXTURE2D_DESC descTexture = {};
+	descTexture.Width = 1280;
+	descTexture.Height = 720;
+	descTexture.MipLevels = 1;
+	descTexture.ArraySize = 1;
+	descTexture.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	descTexture.SampleDesc.Count = 1;
+	descTexture.Usage = D3D11_USAGE_DEFAULT;
+	descTexture.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	descTexture.CPUAccessFlags = 0;
+	descTexture.MiscFlags = 0;
 
+	device->CreateTexture2D(&descTexture, nullptr, &_pRTTRrenderTargetTexture);
+
+	ID3D11Texture2D* pBackBuffer = _pRTTRrenderTargetTexture;
+	context_class->GetSwapChain().Get()->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	device->CreateRenderTargetView(_pRTTRrenderTargetTexture, nullptr, &_pRTTRenderTargetView);
+	pBackBuffer->Release();
+	
 	return hr;
 }
 
@@ -90,13 +98,18 @@ void ObjectQuad::InitialiseShader(ID3D11Device* device, ID3D11DeviceContext* dev
 void ObjectQuad::Draw(Device* device, ID3D11DeviceContext* device_context)
 {
 	device_context->VSSetShader(_ObjectProperties->_pShader.get()->GetVertexShader().Get(), nullptr, 0);
-
+	device_context->VSSetConstantBuffers(0, 1, device->GetConstantBuffer().GetAddressOf());
 
 
 	device_context->PSSetShader(_ObjectProperties->_pShader->GetPixelShader().Get(), nullptr, 0);
+	device_context->PSSetConstantBuffers(2, 1, device->GetLightConstantBuffer().GetAddressOf());
 
+	ID3D11Buffer* materialCB = _ObjectProperties->_pMaterialConstantBuffer.Get();
+	device_context->PSSetConstantBuffers(1, 1, &materialCB);
 
-	device_context->PSSetShaderResources(0, 1, &_pRTTShaderResourceView);
+	device_context->PSSetShaderResources(0, 1, _ObjectProperties->_pTextureResourceView.GetAddressOf());
+	device_context->PSSetShaderResources(1, 1, _ObjectProperties->_pNormalResourceView.GetAddressOf());
+	device_context->PSSetShaderResources(2, 1, _ObjectProperties->_pParallaxResourceView.GetAddressOf());
 	device_context->PSSetSamplers(0, 1, _ObjectProperties->_pSamplerState.GetAddressOf());
 
 	device_context->DrawIndexed(6, 0, 0);
@@ -106,5 +119,10 @@ void ObjectQuad::Update(ID3D11Device* device, ID3D11DeviceContext* device_contex
 {
 
 
+	XMMATRIX mTranslate = XMMatrixTranslation(_ObjectProperties->_Transformation.GetTranslate().x, _ObjectProperties->_Transformation.GetTranslate().y, _ObjectProperties->_Transformation.GetTranslate().z);
+	XMMATRIX world = mTranslate;
+	XMStoreFloat4x4(&World, world);
 
+
+	device_context->UpdateSubresource(_ObjectProperties->_pMaterialConstantBuffer.Get(), 0, nullptr, &_ObjectProperties->_Material, 0, 0);
 }
