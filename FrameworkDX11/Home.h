@@ -66,6 +66,17 @@ public:
 	void UpdateConstantBuffer();
 	void Draw();
 
+	std::unique_ptr<Shader> _QuadShader;
+
+
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> _QuadVertexLayout;
+
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> _pRTTRenderTargetView;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pRTTShaderResourceView;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> _pRTTexture;
+	Microsoft::WRL::ComPtr <ID3D11Buffer> _QuadVB;
+	Microsoft::WRL::ComPtr <ID3D11Buffer> _QuadIB;
+
 
 	void DetectInput()
 	{

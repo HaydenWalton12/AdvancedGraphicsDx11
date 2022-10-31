@@ -107,13 +107,13 @@ void Shader::CreateVertexShader(ID3D11Device* device, ID3D11DeviceContext* devic
 
 	UINT num_elements = ARRAYSIZE(layout);
 
-	// Create the input layout - Describes layout of input buffer data within input assembler stage.
-	device->CreateInputLayout(layout, num_elements, pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &vertex_layout);
+	// Create the input layout - Descr ibes layout of input buffer data within input assembler stage.
+	device->CreateInputLayout(layout, num_elements, pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &_VertexLayout);
 	pVSBlob->Release();
 
 
 	//Needs Rendering Command System+
-	device_context->IASetInputLayout(vertex_layout);
+	//device_context->IASetInputLayout(vertex_layout);
 }
 void Shader::CreatePixelShader(ID3D11Device* device, ID3D11DeviceContext* device_context)
 {

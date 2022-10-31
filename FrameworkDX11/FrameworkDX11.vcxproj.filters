@@ -4,6 +4,8 @@
     <FxCompile Include="shader.fx" />
     <FxCompile Include="PixelShader.hlsl" />
     <FxCompile Include="VertexShader.hlsl" />
+    <FxCompile Include="VertexShaderQuad.hlsl" />
+    <FxCompile Include="PixelShaderQuad.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DDSTextureLoader.cpp" />

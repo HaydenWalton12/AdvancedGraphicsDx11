@@ -280,11 +280,6 @@ HRESULT ObjectCube::InitMesh(ID3D11Device* device, ID3D11DeviceContext* context)
 
 	hr = device->CreateSamplerState(&sampDesc, _ObjectProperties->_pSamplerState.GetAddressOf());
 
-	_ObjectProperties->_Material.Material.Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	_ObjectProperties->_Material.Material.Specular = XMFLOAT4(1.0f, 0.2f, 0.2f, 1.0f);
-	_ObjectProperties->_Material.Material.SpecularPower = 32.0f;
-	_ObjectProperties->_Material.Material.UseTexture = true;
-
 	// Create the material constant buffer
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(MaterialPropertiesConstantBuffer);
@@ -313,9 +308,17 @@ void ObjectCube::InitialiseShader(ID3D11Device* device, ID3D11DeviceContext* dev
 
 void ObjectCube::Draw(Device* device, ID3D11DeviceContext* device_context)
 {
+	// Set vertex buffer
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	device_context->IASetVertexBuffers(0, 1, _ObjectProperties->_pVertexBuffer.GetAddressOf(), &stride, &offset);
+	device_context->IASetInputLayout(_ObjectProperties->_pShader->GetVertexLayout().Get());
+	device_context->IASetIndexBuffer(_ObjectProperties->_pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 	device_context->VSSetShader(_ObjectProperties->_pShader.get()->GetVertexShader().Get(), nullptr, 0);
 	device_context->VSSetConstantBuffers(0, 1, device->GetConstantBuffer().GetAddressOf());
-
+	device_context->IASetInputLayout(_ObjectProperties->_pShader->GetVertexLayout().Get());
 
 	device_context->PSSetShader(_ObjectProperties->_pShader->GetPixelShader().Get(), nullptr, 0);
 	device_context->PSSetConstantBuffers(2, 1, device->GetLightConstantBuffer().GetAddressOf());
@@ -330,8 +333,25 @@ void ObjectCube::Draw(Device* device, ID3D11DeviceContext* device_context)
 
 	device_context->DrawIndexed(NUM_VERTICES, 0, 0);
 }
+void ObjectCube::Draw2(Device* device, ID3D11DeviceContext* device_context , ID3D11ShaderResourceView* view)
+{
+	device_context->VSSetShader(_ObjectProperties->_pShader.get()->GetVertexShader().Get(), nullptr, 0);
+	device_context->VSSetConstantBuffers(0, 1, device->GetConstantBuffer().GetAddressOf());
 
-void ObjectCube::Update(ID3D11Device* device, ID3D11DeviceContext* device_context)
+
+	device_context->PSSetShader(_ObjectProperties->_pShader->GetPixelShader().Get(), nullptr, 0);
+	device_context->PSSetConstantBuffers(2, 1, device->GetLightConstantBuffer().GetAddressOf());
+
+	ID3D11Buffer* materialCB = _ObjectProperties->_pMaterialConstantBuffer.Get();
+	device_context->PSSetConstantBuffers(1, 1, &materialCB);
+
+	device_context->PSSetShaderResources(0, 1, &view);
+	device_context->PSSetSamplers(0, 1, _ObjectProperties->_pSamplerState.GetAddressOf());
+
+	device_context->DrawIndexed(NUM_VERTICES, 0, 0);
+}
+
+void ObjectCube::Update(Device* device, ID3D11DeviceContext* device_context)
 {
 
 
@@ -342,5 +362,4 @@ void ObjectCube::Update(ID3D11Device* device, ID3D11DeviceContext* device_contex
 	XMStoreFloat4x4(&World, world);
 
 
-	device_context->UpdateSubresource(_ObjectProperties->_pMaterialConstantBuffer.Get(), 0, nullptr, &_ObjectProperties->_Material, 0, 0);
 }

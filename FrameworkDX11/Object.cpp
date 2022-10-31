@@ -14,6 +14,6 @@ void Object::Draw(Device* device, ID3D11DeviceContext* device_context)
 {
 }
 
-void Object::Update(ID3D11Device* device, ID3D11DeviceContext* device_context)
+void Object::Update(Device* device, ID3D11DeviceContext* device_context)
 {
 }

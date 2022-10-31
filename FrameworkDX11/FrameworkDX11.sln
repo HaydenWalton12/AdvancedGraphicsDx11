@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31205.134
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameworkDX11", "FrameworkDX11\FrameworkDX11.vcxproj", "{EA744FDE-6588-4AA7-94BA-318D00E409DC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameworkDX11", "FrameworkDX11.vcxproj", "{EA744FDE-6588-4AA7-94BA-318D00E409DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +32,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {40A70445-D4AF-40B4-ACE1-20F59B297A25}
+		SolutionGuid = {3ACC72F6-66E5-49C6-93A3-DE9C809D06C8}
 	EndGlobalSection
 EndGlobal

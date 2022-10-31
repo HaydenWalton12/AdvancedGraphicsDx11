@@ -393,7 +393,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float3x3 TBN_INV = transpose(TBN);
     
     //Converts View & Light Into Tangent Space
-    float3 view_ts = normalize(mul(TBN, EyePosition.xyz - IN.worldPos.xyz));
+    float3 view_ts = normalize(mul(TBN_INV, EyePosition.xyz - IN.worldPos.xyz));
     float3 light_ts = normalize(mul(TBN, Lights[0].Position.xyz - IN.worldPos.xyz));
 
     float2 tex_coord = IN.Tex;
@@ -418,13 +418,11 @@ float4 PS(PS_INPUT IN) : SV_TARGET
     float4 diffuse = Material.Diffuse * lit.Diffuse;
     float4 specular = Material.Specular * lit.Specular ;
 
-    if (Material.UseTexture)
-    {
-        texColor = txDiffuse.Sample(samLinear, calculated_tex_coords);
-    }
+        texColor = txDiffuse.Sample(samLinear, IN.Tex);
+    
 
 
-    float4 finalColor = (emissive + ambient + diffuse + specular ) * texColor;
+    float4 finalColor = texColor;
 
     return finalColor;
 }

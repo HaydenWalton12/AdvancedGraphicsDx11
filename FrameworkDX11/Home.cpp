@@ -15,7 +15,6 @@ void Home::InitialiseApplication(HWND hwnd , HINSTANCE instance, int width , int
     _pContext->SetSwapChain(_pDevice->GetDevice().Get());
     _pDevice->CreateRenderTargetView(_pContext->GetSwapChain().Get());
 
-    _pContext->SetRenderTargetView(_pDevice->GetRenderTargetView().Get(), _pDevice->GetDepthStencilView().Get());
     _pDevice->CreateConstantBuffer();
     //Setup ImGui
     IMGUI_CHECKVERSION();
@@ -51,6 +50,74 @@ HRESULT Home::InitScene(int width, int height)
     _pObjectCube->InitMesh(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
     _pObjectCube->InitialiseShader(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"PixelShader.hlsl", L"VertexShader.hlsl");
 
+    SimpleVertex v[] =
+    {
+
+        { XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+        { XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
+        { XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+        { XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+
+    };
+
+    WORD indices[] = {
+
+        // Front Face
+        0, 1, 2,
+        0, 2, 3,
+
+    };
+
+
+    D3D11_BUFFER_DESC bd = {};
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = sizeof(SimpleVertex) * 4;
+    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    bd.CPUAccessFlags = 0;
+
+    D3D11_SUBRESOURCE_DATA InitData = {};
+    InitData.pSysMem = &v[0];
+    HRESULT hr = _pDevice->GetDevice()->CreateBuffer(&bd, &InitData, _QuadVB.GetAddressOf());
+    if (FAILED(hr))
+        return hr;
+
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = sizeof(WORD) * 6;        // 36 vertices needed for 12 triangles in a triangle list
+    bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    bd.CPUAccessFlags = 0;
+    InitData.pSysMem = &indices[0];
+    hr = _pDevice->GetDevice()->CreateBuffer(&bd, &InitData, _QuadIB.GetAddressOf());
+    if (FAILED(hr))
+        return hr;
+
+
+   _QuadShader = std::make_unique<Shader>(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"VertexShaderQuad.hlsl" , L"PixelShaderQuad.hlsl");
+
+
+
+
+   // Create depth stencil texture
+   D3D11_TEXTURE2D_DESC textureDesc = {};
+   textureDesc.Width = 1280;
+   textureDesc.Height = 720;
+   textureDesc.MipLevels = 1;
+   textureDesc.ArraySize = 1;
+   textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+   textureDesc.SampleDesc.Count = 1;
+   textureDesc.Usage = D3D11_USAGE_DEFAULT;
+
+   textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+   textureDesc.CPUAccessFlags = 0;
+   textureDesc.MiscFlags = 0;
+    _pDevice->GetDevice()->CreateTexture2D(&textureDesc, nullptr, _pRTTexture.GetAddressOf());
+
+    // Create a render target view
+    ID3D11Texture2D* pBackBuffer = _pRTTexture.Get();
+    _pContext->GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+    _pDevice->GetDevice()->CreateRenderTargetView(_pRTTexture.Get(), nullptr, _pRTTRenderTargetView.GetAddressOf());
+    pBackBuffer->Release();
+
+    _pDevice->GetDevice()->CreateShaderResourceView(_pRTTexture.Get() , nullptr , pRTTShaderResourceView.GetAddressOf());
     return S_OK;
     
 
@@ -58,25 +125,47 @@ HRESULT Home::InitScene(int width, int height)
 
 void Home::Render()
 {
+   
+
     //Im GUI Draw Order , Must Be after dx11 draw order
-
-    Input(_Instance);
-
-    ClearRenderTarget();
-
 
     float t = CalculateDeltaTime(); // capped at 60 fps
     if (t == 0.0f)
         return;
+    Input(_Instance);
 
+    ClearRenderTarget();
+    _pContext->GetDeviceContext().Get()->OMSetRenderTargets(1, _pRTTRenderTargetView.GetAddressOf(), _pDevice->GetDepthStencilView().Get());
 
 
     // Update the cube transform, material etc. 
-    _pObjectCube->Update(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get());
+    _pObjectCube->Update(_pDevice, _pContext->GetDeviceContext().Get());
 
     UpdateConstantBuffer();
 
     Draw();
+
+
+    _pContext->GetDeviceContext().Get()->OMSetRenderTargets(1, _pDevice->GetRenderTargetView().GetAddressOf(), _pDevice->GetDepthStencilView().Get());
+    _pContext->GetDeviceContext()->ClearDepthStencilView(_pDevice->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+    // Set vertex buffer
+    UINT stride = sizeof(SimpleVertex);
+    UINT offset = 0;
+    _pContext->GetDeviceContext()->IASetVertexBuffers(0, 1, _QuadVB.GetAddressOf(), &stride, &offset);
+
+    _pContext->GetDeviceContext()->IASetIndexBuffer(_QuadIB.Get(), DXGI_FORMAT_R16_UINT, 0);
+    _pContext->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    _pContext->GetDeviceContext()->IASetInputLayout(_QuadShader->GetVertexLayout().Get());
+
+    //Tests wether the quad is physically drawn
+   // HRESULT hr =  CreateDDSTextureFromFile(_pDevice->GetDevice().Get(), L"Resources\\color.dds", nullptr, pRTTShaderResourceView.GetAddressOf());
+
+    _pContext->GetDeviceContext()->VSSetShader(_QuadShader.get()->GetVertexShader().Get(), nullptr, 0);
+    _pContext->GetDeviceContext()->PSSetShader(_QuadShader->GetPixelShader().Get(), nullptr, 0);
+        _pContext->GetDeviceContext()->PSSetShaderResources(0, 1, pRTTShaderResourceView.GetAddressOf());
+
+    _pContext->GetDeviceContext()->DrawIndexed(36, 0, 0);
 
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
@@ -93,14 +182,12 @@ void Home::Render()
         ImGui::DragFloat("Y", &_Lighting.Position.y, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Z", &_Lighting.Position.z, 0.1f, -20.0f, 20.0f);
     }
-
     if (ImGui::CollapsingHeader("Active Cube Controls"))
     {
         ImGui::DragFloat("X", &_pObjectCube->_ObjectProperties->_Transformation.Translation.x, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Y", &_pObjectCube->_ObjectProperties->_Transformation.Translation.y, 0.1f, -20.0f, 20.0f);
         ImGui::DragFloat("Z", &_pObjectCube->_ObjectProperties->_Transformation.Translation.z, 0.1f, -20.0f, 20.0f);
     }
-
     if (ImGui::CollapsingHeader("Active Cube Rotate"))
     {
         ImGui::DragFloat("X", &_pObjectCube->_ObjectProperties->_Transformation.Rotation.x, 0.1f, -20.0f, 20.0f);
@@ -225,6 +312,8 @@ void Home::ClearRenderTarget()
 {
     // Clear the back buffer
     _pContext->GetDeviceContext()->ClearRenderTargetView(_pDevice->GetRenderTargetView().Get(), Colors::MidnightBlue);
+    _pContext->GetDeviceContext()->ClearRenderTargetView(_pRTTRenderTargetView.Get(), Colors::White);
+
     // Clear the depth buffer to 1.0 (max depth)
     _pContext->GetDeviceContext()->ClearDepthStencilView(_pDevice->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }

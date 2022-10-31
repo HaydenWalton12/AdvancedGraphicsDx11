@@ -13,9 +13,12 @@ public:
 
 	 void Draw(Device* device, ID3D11DeviceContext* device_context) override ;
 
+	 void Draw2(Device* device, ID3D11DeviceContext* device_context, ID3D11ShaderResourceView* view);
+
+
 	
 	 XMFLOAT4X4 World;
 
-	 void Update(ID3D11Device* device, ID3D11DeviceContext* device_context) override;
+	 void Update(Device* device, ID3D11DeviceContext* device_context) override;
 };
 

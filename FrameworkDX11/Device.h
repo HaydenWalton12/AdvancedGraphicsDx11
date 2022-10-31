@@ -7,7 +7,11 @@
 #include <DirectXCollision.h>
 #include "structures.h"
 #include <wrl.h>
-
+struct SimpleVertex2
+{
+	XMFLOAT3 Pos;
+	XMFLOAT2 Tex;
+};
 struct SimpleVertex
 {
 	XMFLOAT3 Pos;
