@@ -73,7 +73,8 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> _pRTTRenderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pRTTShaderResourceView;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> _pRTTexture;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> _pRTTexture1;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> _pRTTexture2;
 	Microsoft::WRL::ComPtr <ID3D11Buffer> _QuadVB;
 	Microsoft::WRL::ComPtr <ID3D11Buffer> _QuadIB;
 

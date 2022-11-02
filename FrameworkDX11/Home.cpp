@@ -109,15 +109,15 @@ HRESULT Home::InitScene(int width, int height)
    textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
    textureDesc.CPUAccessFlags = 0;
    textureDesc.MiscFlags = 0;
-    _pDevice->GetDevice()->CreateTexture2D(&textureDesc, nullptr, _pRTTexture.GetAddressOf());
+    _pDevice->GetDevice()->CreateTexture2D(&textureDesc, nullptr, _pRTTexture1.GetAddressOf());
 
     // Create a render target view
-    ID3D11Texture2D* pBackBuffer = _pRTTexture.Get();
+    ID3D11Texture2D* pBackBuffer = _pRTTexture1.Get();
     _pContext->GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
-    _pDevice->GetDevice()->CreateRenderTargetView(_pRTTexture.Get(), nullptr, _pRTTRenderTargetView.GetAddressOf());
+    _pDevice->GetDevice()->CreateRenderTargetView(_pRTTexture1.Get(), nullptr, _pRTTRenderTargetView.GetAddressOf());
     pBackBuffer->Release();
 
-    _pDevice->GetDevice()->CreateShaderResourceView(_pRTTexture.Get() , nullptr , pRTTShaderResourceView.GetAddressOf());
+    _pDevice->GetDevice()->CreateShaderResourceView(_pRTTexture1.Get() , nullptr , pRTTShaderResourceView.GetAddressOf());
     return S_OK;
     
 
@@ -313,7 +313,7 @@ void Home::ClearRenderTarget()
 {
     // Clear the back buffer
     _pContext->GetDeviceContext()->ClearRenderTargetView(_pDevice->GetRenderTargetView().Get(), Colors::MidnightBlue);
-    _pContext->GetDeviceContext()->ClearRenderTargetView(_pRTTRenderTargetView.Get(), Colors::White);
+    _pContext->GetDeviceContext()->ClearRenderTargetView(_pRTTRenderTargetView.Get(), Colors::MidnightBlue);
 
     // Clear the depth buffer to 1.0 (max depth)
     _pContext->GetDeviceContext()->ClearDepthStencilView(_pDevice->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);

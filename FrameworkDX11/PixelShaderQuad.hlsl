@@ -12,13 +12,27 @@ struct QUADPS_INPUT
     float2 Tex : TEXCOORD0;
 
 };
-
+//https://www.shadertoy.com/view/Xltfzj
+//https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/Samples/UWP/D3D12HeterogeneousMultiadapter/src/blurShaders.hlsl
 float4 PS(QUADPS_INPUT Input) : SV_TARGET
 {
-    float4 color = tex.Sample(samLinear , Input.Tex);
-    float3 grayscale = float3(0.2125f, 0.7154f, 0.0721f);
-    float3 output = dot(color.rgb, grayscale);
-    return float4(output, color.a);
+    float Pi = 1.28318530718; // Pi*2
+    float Directions = 1.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
+    float Quality = 1.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
+    float Size = 1.0; // BLUR SIZE (Radius)
+
+    float2 uv = Input.Tex;
+    float4 color = tex.Sample(samLinear , uv);
+     // Blur calculations
+    for (float d = 0.0; d < Pi; d += Pi / Directions)
+    {
+        for (float i = 1.0 / Quality; i <= 1.0; i += 1.0 / Quality)
+        {
+            color += tex.Sample(samLinear, uv + float2(cos(d), sin(d)) * 0.01 * i);
+        }
+    }
+    
+    return color;
 
 
 }
