@@ -143,6 +143,7 @@ void Home::Render()
 
     UpdateConstantBuffer();
 
+
     Draw();
 
 
