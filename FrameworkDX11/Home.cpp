@@ -62,7 +62,7 @@ HRESULT Home::InitScene(int width, int height)
 
     WORD indices[] = {
 
-        // Front Face
+        // Front Facecolor
         0, 1, 2,
         0, 2, 3,
 
@@ -166,7 +166,7 @@ void Home::Render()
     _pContext->GetDeviceContext()->PSSetShader(_QuadShader->GetPixelShader().Get(), nullptr, 0);
         _pContext->GetDeviceContext()->PSSetShaderResources(0, 1, pRTTShaderResourceView.GetAddressOf());
 
-    _pContext->GetDeviceContext()->DrawIndexed(36, 0, 0);
+    _pContext->GetDeviceContext()->DrawIndexed(6, 0, 0);
 
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();

@@ -12,26 +12,37 @@ struct QUADPS_INPUT
     float2 Tex : TEXCOORD0;
 
 };
-//https://www.shadertoy.com/view/Xltfzj
-//https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/Samples/UWP/D3D12HeterogeneousMultiadapter/src/blurShaders.hlsl
+float4 GaussainBlur(float2 texCoords)
+{
+    float weight[5] = { 0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216 };
+
+    //Gets first pixel/color/texture color
+    float2 tex_offset = 0.1f / tex.Sample(samLinear, 0);
+    //Current Color
+    float3 result = tex.Sample(samLinear, texCoords).rgb * weight[0];
+
+    for (int i  = 1; i < 5; i++)
+    {
+        result += tex.Sample(samLinear, texCoords + float2(tex_offset.y * i, 0.0f)).rgb * weight[i]; // right 
+        result += tex.Sample(samLinear, texCoords - float2(tex_offset.y  * i, 0.0f)).rgb * weight[i]; // left
+
+    }
+    for (int i = 1; i < 5; i++)
+    {
+        result += tex.Sample(samLinear, texCoords + float2(0.0f, tex_offset.y * i)).rgb * weight[i];
+        result += tex.Sample(samLinear, texCoords - float2(0.0f, tex_offset.y * i)).rgb * weight[i];
+
+    }
+    return float4(result, 0.0f);
+}
+
 float4 PS(QUADPS_INPUT Input) : SV_TARGET
 {
-    float Pi = 1.28318530718; // Pi*2
-    float Directions = 1.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
-    float Quality = 1.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
-    float Size = 1.0; // BLUR SIZE (Radius)
 
-    float2 uv = Input.Tex;
-    float4 color = tex.Sample(samLinear , uv);
-     // Blur calculations
-    for (float d = 0.0; d < Pi; d += Pi / Directions)
-    {
-        for (float i = 1.0 / Quality; i <= 1.0; i += 1.0 / Quality)
-        {
-            color += tex.Sample(samLinear, uv + float2(cos(d), sin(d)) * 0.01 * i);
-        }
-    }
-    
+
+    float4 blur = GaussainBlur(Input.Tex);
+    float4 color = tex.Sample(samLinear , Input.Tex);
+    color += blur;
     return color;
 
 
