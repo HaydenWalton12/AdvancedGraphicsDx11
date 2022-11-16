@@ -200,7 +200,7 @@ void Home::Render()
 
     //Quads shader resource view has stores our the texture we rendered previously , within quad shader we return the texture , however with final colour processing.
     _pContext->GetDeviceContext()->PSSetShaderResources(0, 1, pRTTShaderResourceView.GetAddressOf());
-   // _pContext->GetDeviceContext()->PSSetShaderResources(1, 1, _pTextureResourceView.GetAddressOf());
+    _pContext->GetDeviceContext()->PSSetShaderResources(1, 1, _pTextureResourceView.GetAddressOf());
 
     _pContext->GetDeviceContext()->DrawIndexed(6, 0, 0);
 
