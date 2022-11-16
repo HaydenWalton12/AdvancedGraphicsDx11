@@ -16,6 +16,8 @@ struct QUADPS_INPUT
 
 };
 https://developer.nvidia.com/gpugems/gpugems/part-iv-image-processing/chapter-21-real-time-glow
+//Add
+https://www.rastertek.com/tutdx11.html
 //--------------------------------------------------------------------------------------
 //  Blur Buffer
 //--------------------------------------------------------------------------------------
