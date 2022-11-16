@@ -93,8 +93,16 @@ HRESULT Home::InitScene(int width, int height)
 
    _QuadShader = std::make_unique<Shader>(_pDevice->GetDevice().Get(), _pContext->GetDeviceContext().Get(), L"VertexShaderQuad.hlsl" , L"PixelShaderQuad.hlsl");
 
+   bd.ByteWidth = sizeof(BlurBuffer);
+   bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+   bd.CPUAccessFlags = 0;
+   hr = _pDevice->GetDevice()->CreateBuffer(&bd, nullptr, &_pBlurBuffer );
+   if (FAILED(hr))
+       return hr;
 
-
+   hr = CreateDDSTextureFromFile(_pDevice->GetDevice().Get(), L"Resources\\metal_grate_rusty_diff_4k.dds", nullptr,_pTextureResourceView.GetAddressOf());
+   if (FAILED(hr))
+       return hr;
 
    // Create depth stencil texture
    D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -109,6 +117,7 @@ HRESULT Home::InitScene(int width, int height)
    textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
    textureDesc.CPUAccessFlags = 0;
    textureDesc.MiscFlags = 0;
+
     _pDevice->GetDevice()->CreateTexture2D(&textureDesc, nullptr, _pRTTexture1.GetAddressOf());
 
     // Create a render target view
@@ -125,7 +134,18 @@ HRESULT Home::InitScene(int width, int height)
 
 void Home::Render()
 {
+   /*
+    Post Processing Applied, it works by doing the following:
    
+   Set render target to our RRTRenderView, this allows DirectX to know what render target we want our current render data to draw to , with the given correct properties
+   todo so. In my case, a texture resource that will be the target to store this data, this data will be stored on the target view too (well has reference).
+
+   We render entire scene to a to a texture (essentially a screen capture of our pre-rendered scene, since it hasnt been displayed to output merger yet)
+   
+   I then switch the render target view to my default target view(i say default since prior this was the only/defacto render view used)
+   On this render view, I draw a fullscreen quad, this quad has a shader resource view(to process data via pixel / vertex shader stages) , this resource view
+   stores the texture to our pre-rendered scene. We then process the texels/pixels, we can do this in a manor any way we want to , we then use this as the resultant
+   */
 
     //Im GUI Draw Order , Must Be after dx11 draw order
 
@@ -135,6 +155,9 @@ void Home::Render()
     Input(_Instance);
 
     ClearRenderTarget();
+
+    //Set Initial Render Target, This will be our Render Texture Target view
+    // Draws our scene to a texture, we then draw this to the normal render target just as a texture, allowing us to use the quad
     _pContext->GetDeviceContext().Get()->OMSetRenderTargets(1, _pRTTRenderTargetView.GetAddressOf(), _pDevice->GetDepthStencilView().Get());
 
 
@@ -144,9 +167,10 @@ void Home::Render()
     UpdateConstantBuffer();
 
 
+
     Draw();
 
-
+    //Set To Normal Render Target
     _pContext->GetDeviceContext().Get()->OMSetRenderTargets(1, _pDevice->GetRenderTargetView().GetAddressOf(), _pDevice->GetDepthStencilView().Get());
     _pContext->GetDeviceContext()->ClearDepthStencilView(_pDevice->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -160,11 +184,23 @@ void Home::Render()
     _pContext->GetDeviceContext()->IASetInputLayout(_QuadShader->GetVertexLayout().Get());
 
     //Tests wether the quad is physically drawn
-   // HRESULT hr =  CreateDDSTextureFromFile(_pDevice->GetDevice().Get(), L"Resources\\color.dds", nullptr, pRTTShaderResourceView.GetAddressOf());
+   //HRESULT hr =  CreateDDSTextureFromFile(_pDevice->GetDevice().Get(), L"Resources\\color.dds", nullptr, pRTTShaderResourceView.GetAddressOf());
+    //
+    BlurBuffer blur;
+
+    blur.horizontal = 1;
+    blur.verticle = 1;
+    blur.enable = 1;
+    blur.padding;
+    _pContext->GetDeviceContext()->UpdateSubresource(_pBlurBuffer.Get(), 0, nullptr, &blur, 0, 0);
+    _pContext->GetDeviceContext()->PSSetConstantBuffers(0, 1, _pBlurBuffer.GetAddressOf());
 
     _pContext->GetDeviceContext()->VSSetShader(_QuadShader.get()->GetVertexShader().Get(), nullptr, 0);
     _pContext->GetDeviceContext()->PSSetShader(_QuadShader->GetPixelShader().Get(), nullptr, 0);
-        _pContext->GetDeviceContext()->PSSetShaderResources(0, 1, pRTTShaderResourceView.GetAddressOf());
+
+    //Quads shader resource view has stores our the texture we rendered previously , within quad shader we return the texture , however with final colour processing.
+    _pContext->GetDeviceContext()->PSSetShaderResources(0, 1, pRTTShaderResourceView.GetAddressOf());
+   // _pContext->GetDeviceContext()->PSSetShaderResources(1, 1, _pTextureResourceView.GetAddressOf());
 
     _pContext->GetDeviceContext()->DrawIndexed(6, 0, 0);
 
@@ -313,7 +349,7 @@ void Home::ClearRenderTarget()
 {
     // Clear the back buffer
     _pContext->GetDeviceContext()->ClearRenderTargetView(_pDevice->GetRenderTargetView().Get(), Colors::MidnightBlue);
-    _pContext->GetDeviceContext()->ClearRenderTargetView(_pRTTRenderTargetView.Get(), Colors::MidnightBlue);
+    _pContext->GetDeviceContext()->ClearRenderTargetView(_pRTTRenderTargetView.Get(), Colors::Green);
 
     // Clear the depth buffer to 1.0 (max depth)
     _pContext->GetDeviceContext()->ClearDepthStencilView(_pDevice->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -329,7 +365,6 @@ void Home::UpdateConstantBuffer()
     cb1.mWorld = XMMatrixTranspose(mGO);
     cb1.mView = XMMatrixTranspose(_pCamera->CalculateViewMatrix());
     cb1.mProjection = XMMatrixTranspose(_pCamera->CalculateProjectionMatrix());
-    cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
     cb1.EyePosW = XMFLOAT3(_pCamera->GetUp().x , _pCamera->GetUp().y , _pCamera->GetUp().z);
 
     _pContext->GetDeviceContext()->UpdateSubresource(_pDevice->GetConstantBuffer().Get(), 0, nullptr, &cb1, 0, 0);

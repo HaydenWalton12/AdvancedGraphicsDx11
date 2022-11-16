@@ -315,7 +315,7 @@ void ObjectCube::Draw(Device* device, ID3D11DeviceContext* device_context)
 	device_context->IASetInputLayout(_ObjectProperties->_pShader->GetVertexLayout().Get());
 	device_context->IASetIndexBuffer(_ObjectProperties->_pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 	device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+	 
 	device_context->VSSetShader(_ObjectProperties->_pShader.get()->GetVertexShader().Get(), nullptr, 0);
 	device_context->VSSetConstantBuffers(0, 1, device->GetConstantBuffer().GetAddressOf());
 	device_context->IASetInputLayout(_ObjectProperties->_pShader->GetVertexLayout().Get());

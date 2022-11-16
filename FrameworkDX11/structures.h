@@ -6,6 +6,15 @@ using namespace DirectX;
 // Structures
 //--------------------------------------------------------------------------------------
 
+struct BlurBuffer
+{
+	float verticle;
+	float horizontal;
+	float enable;
+	float padding;
+};
+
+
 
 struct ConstantBuffer
 {

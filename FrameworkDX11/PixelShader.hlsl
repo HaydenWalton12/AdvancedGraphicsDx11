@@ -21,8 +21,6 @@ cbuffer ConstantBuffer : register(b0)
     matrix Projection;
     float4 vOutputColor;
     float3 EyePosW;
-
-
 }
 
 struct VS_INPUT

@@ -72,12 +72,19 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> _QuadVertexLayout;
 
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> _pRTTRenderTargetView;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pRTTShaderResourceView;
+
+	//What our Pixel & Vertex Shader will utilise, for "resources"
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pRTTShaderResourceView = nullptr;
+
+	//Stores Rendered Scene As Texture
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> _pRTTexture1;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> _pRTTexture2;
+	Microsoft::WRL::ComPtr <ID3D11ShaderResourceView> _pTextureResourceView;
+	//Stores Quad Draw Dats
 	Microsoft::WRL::ComPtr <ID3D11Buffer> _QuadVB;
 	Microsoft::WRL::ComPtr <ID3D11Buffer> _QuadIB;
 
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> _pBlurBuffer;
 
 	void DetectInput()
 	{
