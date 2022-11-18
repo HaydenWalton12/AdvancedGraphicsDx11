@@ -348,8 +348,8 @@ void Home::InitDirectInput(HINSTANCE instance)
 void Home::ClearRenderTarget()
 {
     // Clear the back buffer
-    _pContext->GetDeviceContext()->ClearRenderTargetView(_pDevice->GetRenderTargetView().Get(), Colors::MidnightBlue);
-    _pContext->GetDeviceContext()->ClearRenderTargetView(_pRTTRenderTargetView.Get(), Colors::Green);
+    _pContext->GetDeviceContext()->ClearRenderTargetView(_pDevice->GetRenderTargetView().Get(), Colors::Black);
+    _pContext->GetDeviceContext()->ClearRenderTargetView(_pRTTRenderTargetView.Get(), Colors::Black);
 
     // Clear the depth buffer to 1.0 (max depth)
     _pContext->GetDeviceContext()->ClearDepthStencilView(_pDevice->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
