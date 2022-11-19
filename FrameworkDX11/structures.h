@@ -11,7 +11,12 @@ struct BlurBuffer
 	float verticle;
 	float horizontal;
 	float enable;
-	float padding;
+	float padding1;
+
+	int blur_strength;
+	int blur_scale;
+	int blur_amount;
+	float padding2;
 };
 
 

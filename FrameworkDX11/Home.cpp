@@ -100,7 +100,7 @@ HRESULT Home::InitScene(int width, int height)
    if (FAILED(hr))
        return hr;
 
-   hr = CreateDDSTextureFromFile(_pDevice->GetDevice().Get(), L"Resources\\metal_grate_rusty_diff_4k.dds", nullptr,_pTextureResourceView.GetAddressOf());
+  // hr = CreateDDSTextureFromFile(_pDevice->GetDevice().Get(), L"Resources\\metal_grate_rusty_diff_4k.dds", nullptr,_pTextureResourceView.GetAddressOf());
    if (FAILED(hr))
        return hr;
 
@@ -127,6 +127,8 @@ HRESULT Home::InitScene(int width, int height)
     pBackBuffer->Release();
 
     _pDevice->GetDevice()->CreateShaderResourceView(_pRTTexture1.Get() , nullptr , pRTTShaderResourceView.GetAddressOf());
+    _pDevice->GetDevice()->CreateShaderResourceView(_pRTTexture1.Get(), nullptr, _pTextureResourceView.GetAddressOf());
+
     return S_OK;
     
 
@@ -191,7 +193,12 @@ void Home::Render()
     blur.horizontal = 1;
     blur.verticle = 1;
     blur.enable = 1;
-    blur.padding;
+    blur.padding1;
+
+    blur.blur_amount = 10;
+    blur.blur_scale = 5;
+    blur.blur_strength = 2;
+    blur.padding2;
     _pContext->GetDeviceContext()->UpdateSubresource(_pBlurBuffer.Get(), 0, nullptr, &blur, 0, 0);
     _pContext->GetDeviceContext()->PSSetConstantBuffers(0, 1, _pBlurBuffer.GetAddressOf());
 

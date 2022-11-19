@@ -6,6 +6,8 @@
     <FxCompile Include="VertexShader.hlsl" />
     <FxCompile Include="VertexShaderQuad.hlsl" />
     <FxCompile Include="PixelShaderQuad.hlsl" />
+    <FxCompile Include="BloomPS.hlsl" />
+    <FxCompile Include="BlurShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DDSTextureLoader.cpp" />

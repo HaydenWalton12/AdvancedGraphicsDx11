@@ -67,6 +67,7 @@ public:
 	void Draw();
 
 	std::unique_ptr<Shader> _QuadShader;
+	std::unique_ptr<Shader> _BloomShader;
 
 
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> _QuadVertexLayout;
