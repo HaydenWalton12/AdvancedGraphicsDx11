@@ -49,17 +49,17 @@ QUADPS_INPUT VS(VS_INPUT input)
     output.Pos = input.Pos;
     output.tex = input.Tex;
 
-    float texelSize = 1.0f / 1280;
+    float2 texelSize = float2(1.0f / 1280 , 1.0f / 720);
     // Create UV coordinates for the pixel and its four horizontal neighbors on either side.
-    output.tex1 = output.tex + float2(texelSize * -4.0f, texelSize * -5.0f);
-    output.tex2 = output.tex + float2(texelSize * -3.0f, texelSize * -4.0f);
-    output.tex3 = output.tex + float2(texelSize * -2.0f, texelSize * -3.0f);
-    output.tex4 = output.tex + float2(texelSize * -1.0f, texelSize * -2.0f);
-    output.tex5 = output.tex + float2(texelSize * 0.0f, texelSize * 0.0f);
-    output.tex6 = output.tex + float2(texelSize * 1.0f, texelSize * 2.0f);
-    output.tex7 = output.tex + float2(texelSize * 2.0f, texelSize * 3.0f);
-    output.tex8 = output.tex + float2(texelSize * 3.0f, texelSize * 4.0f);
-    output.tex9 = output.tex + float2(texelSize * 4.0f, texelSize * 5.0f);
+    output.tex1 = output.tex + float2(texelSize.x * -4.0f, texelSize.y* -5.0f);
+    output.tex2 = output.tex + float2(texelSize.x * -3.0f, texelSize.y * -4.0f);
+    output.tex3 = output.tex + float2(texelSize.x * -2.0f, texelSize.y * -3.0f);
+    output.tex4 = output.tex + float2(texelSize.x * -1.0f, texelSize.y * -2.0f);
+    output.tex5 = output.tex + float2(texelSize.x * 0.0f, texelSize.y * 0.0f);
+    output.tex6 = output.tex + float2(texelSize.x * 1.0f, texelSize.y * 2.0f);
+    output.tex7 = output.tex + float2(texelSize.x * 2.0f, texelSize.y * 3.0f);
+    output.tex8 = output.tex + float2(texelSize.x * 3.0f, texelSize.y * 4.0f);
+    output.tex9 = output.tex + float2(texelSize.x * 4.0f, texelSize.y * 5.0f);
 
     return output;
 }

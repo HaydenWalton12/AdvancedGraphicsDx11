@@ -104,11 +104,10 @@ HRESULT Home::InitScene(int width, int height)
    if (FAILED(hr))
        return hr;
 
-   // Create depth stencil texture
    D3D11_TEXTURE2D_DESC textureDesc = {};
    textureDesc.Width = 1280;
-   textureDesc.Height = 720;
-   textureDesc.MipLevels = 1;
+   textureDesc.Height = 720 ;
+   textureDesc.MipLevels = 5;
    textureDesc.ArraySize = 1;
    textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
    textureDesc.SampleDesc.Count = 1;
@@ -119,6 +118,7 @@ HRESULT Home::InitScene(int width, int height)
    textureDesc.MiscFlags = 0;
 
     _pDevice->GetDevice()->CreateTexture2D(&textureDesc, nullptr, _pRTTexture1.GetAddressOf());
+
 
     // Create a render target view
     ID3D11Texture2D* pBackBuffer = _pRTTexture1.Get();
@@ -186,7 +186,7 @@ void Home::Render()
     _pContext->GetDeviceContext()->IASetInputLayout(_QuadShader->GetVertexLayout().Get());
 
     //Tests wether the quad is physically drawn
-   //HRESULT hr =  CreateDDSTextureFromFile(_pDevice->GetDevice().Get(), L"Resources\\color.dds", nullptr, pRTTShaderResourceView.GetAddressOf());
+    //HRESULT hr =  CreateDDSTextureFromFile(_pDevice->GetDevice().Get(), L"Resources\\color.dds", nullptr, pRTTShaderResourceView.GetAddressOf());
     //
     BlurBuffer blur;
 

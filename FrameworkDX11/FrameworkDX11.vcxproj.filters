@@ -8,6 +8,7 @@
     <FxCompile Include="PixelShaderQuad.hlsl" />
     <FxCompile Include="BloomPS.hlsl" />
     <FxCompile Include="BlurShader.hlsl" />
+    <FxCompile Include="GlowMap.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DDSTextureLoader.cpp" />

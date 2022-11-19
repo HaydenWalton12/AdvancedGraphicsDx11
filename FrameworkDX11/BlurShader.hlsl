@@ -1,6 +1,5 @@
-
+//Performs Verticle & Horizontal Blur Based Upon Manual Calculations on the adjacent pixels (5 on each size verticall/horizontally) with given weights//
 Texture2D tex : register(t0);
-Texture2D diffuse : register(t1);
 SamplerState samLinear : register(s0);
 
 struct QUADVS_INPUT
